@@ -13,7 +13,7 @@
 
 #include <cassert>
 
-namespace fawn {
+namespace silt {
 
     FileStore::FileStore()
     {
@@ -31,7 +31,7 @@ namespace fawn {
         int_terminate();
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Create()
     {
         std::string filename = config_->GetStringValue("child::file") + "_";
@@ -60,7 +60,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Open()
     {
         std::string filename = config_->GetStringValue("child::file") + "_";
@@ -91,8 +91,8 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
-    FileStore::ConvertTo(FawnDS* new_store) const
+    Silt_Return
+    FileStore::ConvertTo(Silt* new_store) const
     {
         FileStore* file_store = dynamic_cast<FileStore*>(new_store);
         if (!file_store)
@@ -132,7 +132,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Flush()
     {
         if (!int_is_open())
@@ -144,7 +144,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Close()
     {
         if (!int_is_open())
@@ -162,7 +162,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Destroy()
     {
         std::string filename = config_->GetStringValue("child::file") + "_";
@@ -176,8 +176,8 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
-    FileStore::Status(const FawnDS_StatusType& type, Value& status) const
+    Silt_Return
+    FileStore::Status(const Silt_StatusType& type, Value& status) const
     {
         std::ostringstream oss;
         switch (type) {
@@ -200,7 +200,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Put(const ConstValue& key, const ConstValue& data)
     {
 #ifdef DEBUG
@@ -260,7 +260,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Append(Value& key, const ConstValue& data)
     {
 #ifdef DEBUG
@@ -289,7 +289,7 @@ namespace fawn {
 
         key = NewValue(&key_val);
 
-        FawnDS_Return ret = Put(key, data);
+        Silt_Return ret = Put(key, data);
         if (ret != OK) {
             DPRINTF(2, "FileStore::Append(): <result> failed\n");
             return ret;
@@ -306,7 +306,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Contains(const ConstValue& key) const
     {
         if (key.as_number<off_t>(-1) >= end_id_)
@@ -315,13 +315,13 @@ namespace fawn {
             return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Length(const ConstValue& key, size_t& len) const
     {
         return length(key, len, false);
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::length(const ConstValue& key, size_t& len, bool readahead) const
     {
         off_t id = key.as_number<off_t>(-1);
@@ -358,13 +358,13 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::Get(const ConstValue& key, Value& data, size_t offset, size_t len) const
     {
         return get(key, data, offset, len, false);
     }
 
-    FawnDS_Return
+    Silt_Return
     FileStore::get(const ConstValue& key, Value& data, size_t offset, size_t len, bool readahead) const
     {
         off_t id = key.as_number<off_t>(-1);
@@ -381,7 +381,7 @@ namespace fawn {
             return END;
 
         size_t data_len = 0;
-        FawnDS_Return ret_len = length(key, data_len, readahead);
+        Silt_Return ret_len = length(key, data_len, readahead);
         if (ret_len != OK)
             return ret_len;
 
@@ -421,44 +421,44 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     FileStore::Enumerate() const
     {
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->next_id = 0;
         elem->Next();
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     FileStore::Enumerate()
     {
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->next_id = 0;
         elem->Next();
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     FileStore::Find(const ConstValue& key) const
     {
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->next_id = key.as_number<off_t>(-1);
         elem->Next();
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     FileStore::Find(const ConstValue& key)
     {
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->next_id = key.as_number<off_t>(-1);
         elem->Next();
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
     /*
@@ -480,7 +480,7 @@ namespace fawn {
     }
     */
 
-    FawnDS_IteratorElem*
+    Silt_IteratorElem*
     FileStore::IteratorElem::Clone() const
     {
         IteratorElem* elem = new IteratorElem();
@@ -491,7 +491,7 @@ namespace fawn {
     void
     FileStore::IteratorElem::Next()
     {
-        const FileStore* file_store = static_cast<const FileStore*>(fawnds);
+        const FileStore* file_store = static_cast<const FileStore*>(silt);
 
         key = NewValue(&next_id);
         state = file_store->get(key, data, 0, static_cast<size_t>(-1), true);
@@ -823,7 +823,7 @@ namespace fawn {
                     cache_[cache_index].valid = false;
             }
         }
-        
+
         if (written_len < write_size) {
             fprintf(stderr, "FileStore::int_pwritev(): cannot write: %s\n", strerror(errno));
             return false;
@@ -902,4 +902,4 @@ namespace fawn {
 
     TaskScheduler FileStore::task_scheduler_sync_(1, 100);
 
-} // namespace fawn
+} // namespace silt

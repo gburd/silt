@@ -101,11 +101,12 @@ AC_CHECK_FUNCS([\
 	])
 
 CFLAGS="$CFLAGS -Wall -Wextra"
+CXXFLAGS="$CFLAGS"
 
 AC_CONFIG_FILES([ Makefile
 		  utils/Makefile
 		  src/Makefile
 		  test/Makefile
-		  test/fawnds/Makefile
+		  test/silt/Makefile
 		])
 AC_OUTPUT

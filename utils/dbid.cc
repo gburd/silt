@@ -6,7 +6,7 @@ using namespace std;
 #include "print.h"
 
 
-namespace fawn {
+namespace silt {
     DBID::DBID() : actual_size(0) {
         memset(value, '\0', sizeof(value));
     }

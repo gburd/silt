@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-namespace fawn {
+namespace silt {
 
     GlobalLimits GlobalLimits::global_limits_;
 
@@ -69,4 +69,4 @@ namespace fawn {
         ++disabled_;
     }
 
-} // namespace fawn
+} // namespace silt

@@ -2,57 +2,57 @@
 #ifndef _BDB_H_
 #define _BDB_H_
 
-#include "fawnds.h"
+#include "silt.h"
 #include "config.h"
 #include <tbb/atomic.h>
 
 #ifdef HAVE_LIBDB
 #include <db.h>
 
-namespace fawn {
+namespace silt {
 
     // configuration
     //   <type>: "bdb" (fixed)
     //   <id>: the ID of the store
     //   <file>: the file name prefix of Berkeley Database
 
-    class BDB : public FawnDS {
+    class BDB : public Silt {
     public:
         BDB();
         virtual ~BDB();
 
-        virtual FawnDS_Return Create();
-        virtual FawnDS_Return Open();
+        virtual Silt_Return Create();
+        virtual Silt_Return Open();
 
-        virtual FawnDS_Return ConvertTo(FawnDS* new_store) const;
+        virtual Silt_Return ConvertTo(Silt* new_store) const;
 
-        virtual FawnDS_Return Flush();
-        virtual FawnDS_Return Close();
+        virtual Silt_Return Flush();
+        virtual Silt_Return Close();
 
-        virtual FawnDS_Return Destroy();
+        virtual Silt_Return Destroy();
 
-        virtual FawnDS_Return Status(const FawnDS_StatusType& type, Value& status) const;
+        virtual Silt_Return Status(const Silt_StatusType& type, Value& status) const;
 
-        virtual FawnDS_Return Put(const ConstValue& key, const ConstValue& data);
-        //virtual FawnDS_Return Append(Value& key, const ConstValue& data);
+        virtual Silt_Return Put(const ConstValue& key, const ConstValue& data);
+        //virtual Silt_Return Append(Value& key, const ConstValue& data);
 
-        virtual FawnDS_Return Delete(const ConstValue& key);
+        virtual Silt_Return Delete(const ConstValue& key);
 
-        virtual FawnDS_Return Contains(const ConstValue& key) const;
-        virtual FawnDS_Return Length(const ConstValue& key, size_t& len) const;
-        virtual FawnDS_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
+        virtual Silt_Return Contains(const ConstValue& key) const;
+        virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
+        virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
 
-        virtual FawnDS_ConstIterator Enumerate() const;
-        virtual FawnDS_Iterator Enumerate();
+        virtual Silt_ConstIterator Enumerate() const;
+        virtual Silt_Iterator Enumerate();
 
-        virtual FawnDS_ConstIterator Find(const ConstValue& key) const;
-        virtual FawnDS_Iterator Find(const ConstValue& key);
+        virtual Silt_ConstIterator Find(const ConstValue& key) const;
+        virtual Silt_Iterator Find(const ConstValue& key);
 
-        struct IteratorElem : public FawnDS_IteratorElem {
-            IteratorElem(const BDB* fawnds);
+        struct IteratorElem : public Silt_IteratorElem {
+            IteratorElem(const BDB* silt);
             ~IteratorElem();
 
-            FawnDS_IteratorElem* Clone() const;
+            Silt_IteratorElem* Clone() const;
             void Next();
 
             void Increment(bool initial);
@@ -71,8 +71,8 @@ namespace fawn {
         friend struct IteratorElem;
     };
 
-}  // namespace fawn
+}  // namespace silt
 
 #endif
 
-#endif  // #ifndef _FAWNDS_SF_H_
+#endif  // #ifndef _SILT_SF_H_

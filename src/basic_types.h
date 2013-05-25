@@ -2,7 +2,7 @@
 #ifndef _BASIC_TYPES_H_
 #define _BASIC_TYPES_H_
 
-// include essential headers only -- e.g. type definition common to all classes in FawnDS
+// include essential headers only -- e.g. type definition common to all classes in Silt
 
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS

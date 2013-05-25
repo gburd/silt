@@ -6,7 +6,7 @@
 #include <vector>
 #include <tbb/concurrent_queue.h>
 
-namespace fawn {
+namespace silt {
 
     // a simple task scheduler with round-robin per-thread queues; we don't use the TBB task scheduler, which is geared towared computation-oriented tasks
 
@@ -60,6 +60,6 @@ namespace fawn {
         tbb::concurrent_bounded_queue<Task*> shared_queue_;
     };
 
-} // namespace fawn
+} // namespace silt
 
 #endif  // #ifndef _TASK_H_

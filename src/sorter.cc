@@ -7,7 +7,7 @@
 #endif
 #include <cassert>
 
-namespace fawn {
+namespace silt {
 
     Sorter::Sorter()
         : open_(false)
@@ -20,7 +20,7 @@ namespace fawn {
             Close();
     }
 
-    FawnDS_Return
+    Silt_Return
     Sorter::Create()
     {
         if (open_)
@@ -90,7 +90,7 @@ namespace fawn {
     };
 #endif
 
-    FawnDS_Return
+    Silt_Return
     Sorter::Flush()
     {
         if (!open_)
@@ -119,7 +119,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     Sorter::Close()
     {
         if (!open_)
@@ -138,7 +138,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     Sorter::Put(const ConstValue& key, const ConstValue& data)
     {
         if (!open_)
@@ -168,45 +168,45 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     Sorter::Enumerate() const
     {
         if (!open_)
-            return FawnDS_ConstIterator();
+            return Silt_ConstIterator();
         if (!input_ended_)
-            return FawnDS_ConstIterator();
+            return Silt_ConstIterator();
 
         IteratorElem* elem = new IteratorElem(this);
         elem->state = OK;
         elem->Increment(true);
 
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     Sorter::Enumerate()
     {
         if (!open_)
-            return FawnDS_Iterator();
+            return Silt_Iterator();
         if (!input_ended_)
-            return FawnDS_Iterator();
+            return Silt_Iterator();
 
         IteratorElem* elem = new IteratorElem(this);
         elem->state = OK;
         elem->Increment(true);
 
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
-    Sorter::IteratorElem::IteratorElem(const Sorter* fawnds)
+    Sorter::IteratorElem::IteratorElem(const Sorter* silt)
     {
-        this->fawnds = fawnds;
+        this->silt = silt;
     }
 
-    FawnDS_IteratorElem*
+    Silt_IteratorElem*
     Sorter::IteratorElem::Clone() const
     {
-        IteratorElem* elem = new IteratorElem(static_cast<const Sorter*>(fawnds));
+        IteratorElem* elem = new IteratorElem(static_cast<const Sorter*>(silt));
         *elem = *this;
         return elem;
     }
@@ -223,7 +223,7 @@ namespace fawn {
         if (state == END)
             return;
 
-        const Sorter* sorter = static_cast<const Sorter*>(fawnds);
+        const Sorter* sorter = static_cast<const Sorter*>(silt);
 
 #ifndef HAVE_LIBNSORT
 
@@ -264,5 +264,5 @@ namespace fawn {
 #endif
     }
 
-} // namespace fawn
+} // namespace silt
 

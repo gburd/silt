@@ -2,7 +2,7 @@
 #ifndef _FILE_STORE_H_
 #define _FILE_STORE_H_
 
-#include "fawnds.h"
+#include "silt.h"
 #include "file_io.h"    // for iovec
 #include "task.h"
 #include <tbb/atomic.h>
@@ -10,7 +10,7 @@
 #include <tbb/queuing_rw_mutex.h>
 #include <boost/dynamic_bitset.hpp>
 
-namespace fawn {
+namespace silt {
 
     // configuration
     //   <type>: "file" (fixed)
@@ -19,40 +19,40 @@ namespace fawn {
     //   <data-len>: the length of data -- zero for variable-length data (default), a positive integer for fixed-length data (space optimization is applied)
     //   <use-buffered-io-only>: with a non-zero value, use buffered I/O only and do not use direct I/O.  Default is 0 (false).  Useful for quick tests or data-len >= 4096 (direct I/O is less likely to improve read performance).
 
-    class FileStore : public FawnDS {
+    class FileStore : public Silt {
     public:
         FileStore();
         virtual ~FileStore();
 
-        virtual FawnDS_Return Create();
-        virtual FawnDS_Return Open();
+        virtual Silt_Return Create();
+        virtual Silt_Return Open();
 
-        virtual FawnDS_Return ConvertTo(FawnDS* new_store) const;
+        virtual Silt_Return ConvertTo(Silt* new_store) const;
 
-        virtual FawnDS_Return Flush();
-        virtual FawnDS_Return Close();
+        virtual Silt_Return Flush();
+        virtual Silt_Return Close();
 
-        virtual FawnDS_Return Destroy();
+        virtual Silt_Return Destroy();
 
-        virtual FawnDS_Return Status(const FawnDS_StatusType& type, Value& status) const;
+        virtual Silt_Return Status(const Silt_StatusType& type, Value& status) const;
 
-        virtual FawnDS_Return Put(const ConstValue& key, const ConstValue& data);
-        virtual FawnDS_Return Append(Value& key, const ConstValue& data);
+        virtual Silt_Return Put(const ConstValue& key, const ConstValue& data);
+        virtual Silt_Return Append(Value& key, const ConstValue& data);
 
-        //virtual FawnDS_Return Delete(const ConstValue& key);
+        //virtual Silt_Return Delete(const ConstValue& key);
 
-        virtual FawnDS_Return Contains(const ConstValue& key) const;
-        virtual FawnDS_Return Length(const ConstValue& key, size_t& len) const;
-        virtual FawnDS_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
+        virtual Silt_Return Contains(const ConstValue& key) const;
+        virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
+        virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
 
-        virtual FawnDS_ConstIterator Enumerate() const;
-        virtual FawnDS_Iterator Enumerate();
+        virtual Silt_ConstIterator Enumerate() const;
+        virtual Silt_Iterator Enumerate();
 
-        virtual FawnDS_ConstIterator Find(const ConstValue& key) const;
-        virtual FawnDS_Iterator Find(const ConstValue& key);
+        virtual Silt_ConstIterator Find(const ConstValue& key) const;
+        virtual Silt_Iterator Find(const ConstValue& key);
 
-        struct IteratorElem : public FawnDS_IteratorElem {
-            FawnDS_IteratorElem* Clone() const;
+        struct IteratorElem : public Silt_IteratorElem {
+            Silt_IteratorElem* Clone() const;
             void Next();
 
             off_t next_id;
@@ -61,8 +61,8 @@ namespace fawn {
     protected:
         typedef uint32_t entry_length_t;
 
-        FawnDS_Return length(const ConstValue& key, size_t& len, bool readahead) const;
-        FawnDS_Return get(const ConstValue& key, Value& data, size_t offset, size_t len, bool readahead) const;
+        Silt_Return length(const ConstValue& key, size_t& len, bool readahead) const;
+        Silt_Return get(const ConstValue& key, Value& data, size_t offset, size_t len, bool readahead) const;
 
         //int disable_readahead();
 
@@ -125,6 +125,6 @@ namespace fawn {
         friend class SyncTask;
     };
 
-} // namespace fawn
+} // namespace silt
 
 #endif // #ifndef _FILE_STORE_H_

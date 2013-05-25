@@ -3,7 +3,7 @@
 #define _HASH_TABLE_CUCKOO_H_
 
 #include "basic_types.h"
-#include "fawnds.h"
+#include "silt.h"
 
 #include <cassert>
 #include "print.h"
@@ -15,7 +15,7 @@
 //#define SPLIT_HASHTABLE
 
 using namespace std;
-namespace fawn {
+namespace silt {
 
 class Configuration;
 
@@ -27,7 +27,7 @@ class Configuration;
 //   <use-offset>: 1 (default): use an explicit offset field of 4 bytes
 //                 0: do not use offsets; a location in the hash table becomes an offset
 
-class HashTableCuckoo : public FawnDS {
+class HashTableCuckoo : public Silt {
     /*
      * parameters for cuckoo
      */
@@ -58,38 +58,38 @@ public:
     HashTableCuckoo();
     virtual ~HashTableCuckoo();
 
-    virtual FawnDS_Return Create();
-    virtual FawnDS_Return Open();
+    virtual Silt_Return Create();
+    virtual Silt_Return Open();
 
-    virtual FawnDS_Return Flush();
-    virtual FawnDS_Return Close();
+    virtual Silt_Return Flush();
+    virtual Silt_Return Close();
 
-    virtual FawnDS_Return Destroy();
+    virtual Silt_Return Destroy();
 
-    virtual FawnDS_Return Status(const FawnDS_StatusType& type, Value& status) const;
+    virtual Silt_Return Status(const Silt_StatusType& type, Value& status) const;
 
-    virtual FawnDS_Return Put(const ConstValue& key, const ConstValue& data);
+    virtual Silt_Return Put(const ConstValue& key, const ConstValue& data);
    
-    virtual FawnDS_Return ConvertTo(FawnDS* new_store) const;
+    virtual Silt_Return ConvertTo(Silt* new_store) const;
 
 
     // not supported by now.
-    // virtual FawnDS_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
-    //virtual FawnDS_Return Append(Value& key, const ConstValue& data);
-    //virtual FawnDS_Return Delete(const ConstValue& key);
-    //virtual FawnDS_Return Contains(const ConstValue& key) const;
-    //virtual FawnDS_Return Length(const ConstValue& key, size_t& len) const;
+    // virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
+    //virtual Silt_Return Append(Value& key, const ConstValue& data);
+    //virtual Silt_Return Delete(const ConstValue& key);
+    //virtual Silt_Return Contains(const ConstValue& key) const;
+    //virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
 
-    virtual FawnDS_ConstIterator Enumerate() const;
-    virtual FawnDS_Iterator Enumerate();
+    virtual Silt_ConstIterator Enumerate() const;
+    virtual Silt_Iterator Enumerate();
 
-    virtual FawnDS_ConstIterator Find(const ConstValue& key) const;
-    virtual FawnDS_Iterator Find(const ConstValue& key);
+    virtual Silt_ConstIterator Find(const ConstValue& key) const;
+    virtual Silt_Iterator Find(const ConstValue& key);
 
-    struct IteratorElem : public FawnDS_IteratorElem {
-        FawnDS_IteratorElem* Clone() const;
+    struct IteratorElem : public Silt_IteratorElem {
+        Silt_IteratorElem* Clone() const;
         void Next();
-        FawnDS_Return Replace(const ConstValue& data);
+        Silt_Return Replace(const ConstValue& data);
         uint32_t keyfrag[NUMHASH];
         uint32_t current_keyfrag_id;
         uint32_t current_index;
@@ -215,6 +215,6 @@ private:
     friend class IteratorElem;
 };
 
-} // namespace fawn
+} // namespace silt
 
 #endif // #ifndef _HASH_TABLE_CUCKOO_H_

@@ -58,7 +58,7 @@ static inline int ioprio_get(int which, int who)
 #endif
 
 
-namespace fawn {
+namespace silt {
     TaskScheduler::TaskScheduler(size_t num_workers, size_t queue_capacity, cpu_priority_t cpu_priority, io_priority_t io_priority)
         : cpu_priority_(cpu_priority), io_priority_(io_priority)
     {
@@ -177,4 +177,4 @@ namespace fawn {
         *seen_join = true;
     }
 
-} // namespace fawn
+} // namespace silt

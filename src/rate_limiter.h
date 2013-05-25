@@ -4,7 +4,7 @@
 
 #include <tbb/atomic.h>
 
-namespace fawn {
+namespace silt {
 
     // a high-performance high-precision rate limiter based on token bucket
 
@@ -47,6 +47,6 @@ namespace fawn {
         tbb::atomic<int64_t> last_time_;
     };
 
-} // namespace fawn
+} // namespace silt
 
 #endif  // #ifndef _RATE_LIMITER_H_

@@ -2,7 +2,7 @@
 // Pulled from lookup3.c by Bob Jenkins
 #include "hashutil.h"
 
-namespace fawn {
+namespace silt {
     /*
       -------------------------------------------------------------------------------
       hashlittle() -- hash a variable-length key into a 32-bit value
@@ -228,8 +228,9 @@ namespace fawn {
 	u.ptr = buf;
 	if (HASH_LITTLE_ENDIAN && ((u.i & 0x3) == 0)) {
 	    const uint32_t *k = (const uint32_t *)buf;         /* read 32-bit chunks */
+#ifdef VALGRIND
 	    const uint8_t  *k8;
-
+#endif
 	    /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
 	    while (length > 12)
 		{
@@ -242,7 +243,7 @@ namespace fawn {
 		}
 
 	    /*----------------------------- handle the last (probably partial) block */
-	    /* 
+	    /*
 	     * "k[2]&0xffffff" actually reads beyond the end of the string, but
 	     * then masks off the part it's not allowed to read.  Because the
 	     * string is aligned, the masked-off tail is in the same word as the
@@ -712,4 +713,4 @@ namespace fawn {
 
 	return string((char*)md_value, (size_t)md_len);
     }
-} // namespace fawn
+} // namespace silt

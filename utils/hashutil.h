@@ -37,7 +37,7 @@ using namespace std;
 
 #define get16bits(d) (*((const uint16_t *) (d)))
 
-namespace fawn {
+namespace silt {
     class HashUtil {
     public:
 	// Bob Jenkins Hash
@@ -93,5 +93,3 @@ namespace fawn {
 }
 
 #endif  // #ifndef _HASHUTIL_H_
-
-

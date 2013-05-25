@@ -5,7 +5,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-namespace fawn {
+namespace silt {
 
     RateLimiter::RateLimiter(int64_t initial_tokens, int64_t max_tokens, int64_t new_tokens_per_interval, int64_t ns_per_interval, int64_t min_retry_interval_ns)
         : max_tokens_(max_tokens), new_tokens_per_interval_(new_tokens_per_interval), ns_per_interval_(ns_per_interval), min_retry_interval_ns_(min_retry_interval_ns)
@@ -107,4 +107,4 @@ namespace fawn {
         tokens_ += new_tokens;
     }
 
-} // namespace fawn
+} // namespace silt

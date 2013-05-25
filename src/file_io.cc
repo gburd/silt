@@ -1,7 +1,7 @@
 #include "file_io.h"
 
 #ifdef __APPLE__
-namespace fawn {
+namespace silt {
 
 	// non-atomic emulation of preadv and pwritev
 
@@ -39,4 +39,3 @@ namespace fawn {
 
 }
 #endif
-

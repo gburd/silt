@@ -5,7 +5,7 @@
 #include "rate_limiter.h"
 #include <tbb/atomic.h>
 
-namespace fawn {
+namespace silt {
 
     class GlobalLimits {
     public:
@@ -35,6 +35,6 @@ namespace fawn {
         RateLimiter merge_rate_limiter_;
     };
 
-} // namespace fawn
+} // namespace silt
 
 #endif  // #ifndef _GLOBAL_LIMITS_H_

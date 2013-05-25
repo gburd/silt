@@ -28,10 +28,10 @@
 #ifdef __APPLE__
 #define pread64 pread
 #define pwrite64 pwrite
-namespace fawn {
+namespace silt {
     ssize_t preadv(int fd, const struct iovec *iovec, int count, off_t offset);
     ssize_t pwritev(int fd, const struct iovec *iovec, int count, off_t offset);
-}  // namespace fawn
+}  // namespace silt
 #endif // #ifdef __APPLE__
 
 #endif // #ifndef _FILE_IO_H_

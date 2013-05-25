@@ -12,7 +12,7 @@ XERCES_CPP_NAMESPACE_BEGIN
     class DOMElement;
 XERCES_CPP_NAMESPACE_END
 
-namespace fawn {
+namespace silt {
     class ConfigurationObject;
 
     class Configuration {
@@ -48,6 +48,6 @@ namespace fawn {
         static tbb::queuing_mutex mutex_;
     };
 
-} // namespace fawn
+} // namespace silt
 
 #endif  // #ifndef _CONFIGURATION_H_

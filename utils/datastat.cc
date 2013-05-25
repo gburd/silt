@@ -6,12 +6,12 @@
 #include <cstring>
 
 #include "datastat.h"
-namespace fawn {
-    DataStat::DataStat(const char* p, double v_min, double v_max, 
-                       double step_linear = 1.0f, 
+namespace silt {
+    DataStat::DataStat(const char* p, double v_min, double v_max,
+                       double step_linear = 1.0f,
                        double start_log = 1.0f,
                        double step_log = 10.0f)
-        : v_min(v_min), v_max(v_max), 
+        : v_min(v_min), v_max(v_max),
           step_linear(step_linear), start_log(start_log), step_log(step_log),
           x_min(v_max), x_max(v_min), x_num(0), x_sum(0.0f)
     {
@@ -22,7 +22,7 @@ namespace fawn {
 
         memset(name, 0, 256);
         strncpy(name, p, 256);
-        
+
         num_linear = (size_t) ceil((v_max - v_min) / step_linear);
         num_log = (size_t) 1 + ceil( log(v_max / start_log) / log(step_log));
         count_linear = new size_t[num_linear + 1];
@@ -31,11 +31,11 @@ namespace fawn {
         memset(count_log,    0, sizeof(size_t) * num_log);
     }
 
-    DataStat::~DataStat() 
+    DataStat::~DataStat()
     {
     }
 
-    
+
     size_t DataStat::index_linear(double x) {
         size_t i;
         i = (size_t) (x - v_min) / step_linear;
@@ -76,9 +76,9 @@ namespace fawn {
             if (cur >= th ) {
                 ret_linear = v_min + i * step_linear;
                 break;
-            } 
+            }
         }
-            
+
         double ret_log  = v_min - 1;
         cur = 0;
         for (i = 0; i < num_log; i++) {
@@ -86,10 +86,10 @@ namespace fawn {
             if (cur >= th ) {
                 if ( i == 0 )
                     ret_log = v_min;
-                else 
+                else
                     ret_log = start_log * pow(step_log, i - 1);
                 break;
-            } 
+            }
         }
 
         return std::max(ret_linear, ret_log);
@@ -97,18 +97,18 @@ namespace fawn {
 
     double DataStat::cumulative(double x) {
         double cum_linear = 0;
-        for (int i = 0; i < index_linear(x); i++) 
+        for (int i = 0; i < index_linear(x); i++)
             cum_linear += count_linear[i];
         cum_linear = cum_linear * 1.0 / num();
 
         double cum_log = 0;
-        for (int i = 0; i < index_log(x); i++) 
+        for (int i = 0; i < index_log(x); i++)
             cum_log += count_log[i];
         cum_log = cum_log * 1.0 / num();
-        
+
         return std::max(cum_linear, cum_log);
     }
-    
+
     void DataStat::summary() {
         printf("========================================\n");
         printf("\tsummary of %s\n", name);
@@ -140,7 +140,7 @@ namespace fawn {
             printf("N/A\n");
             printf("========================================\n");
             return;
-        } 
+        }
 
         double x;
         if (logscale) {

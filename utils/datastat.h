@@ -6,11 +6,11 @@
 
 
 using namespace std;
-namespace fawn {
+namespace silt {
     class DataStat {
     public:
-        DataStat(const char* p, double v_min, double v_max, 
-                 double step_linear, 
+        DataStat(const char* p, double v_min, double v_max,
+                 double step_linear,
                  double start_log, double step_log);
         ~DataStat();
         /* insert a new value x */

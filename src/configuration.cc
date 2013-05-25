@@ -24,7 +24,7 @@
 
 using namespace std;
 
-namespace fawn {
+namespace silt {
 
     class ConfigurationMutex {
     public:
@@ -81,7 +81,7 @@ namespace fawn {
         DOMImplementation * DOM_impl = DOMImplementationRegistry::getDOMImplementation(XMLCh_name);
         XMLString::release(&XMLCh_name);
         conf_obj_ = new ConfigurationObject();
-        XMLCh_name = XMLString::transcode("fawnds");
+        XMLCh_name = XMLString::transcode("silt");
         conf_obj_->doc_ = DOM_impl->createDocument(NULL, XMLCh_name, NULL);
         XMLString::release(&XMLCh_name);
         context_node_ = conf_obj_->doc_->getDocumentElement();
@@ -101,7 +101,7 @@ namespace fawn {
         while (ExistsNode("child::include") == 0) {
             char file[config_file.size() + 1024];
             strcpy(file, config_file.c_str());
-            
+
             string subconfig_file = string(dirname(file)) + "/";
             subconfig_file += GetStringValue("child::include/file");
 
@@ -159,7 +159,7 @@ namespace fawn {
             context_node_ = other->context_node_;
             DPRINTF(2, "Configuration: Constructor: created object!\n");
         }
-        else 
+        else
         {
             DPRINTF(2, "Configuration: Called constructor with config object\n");
             initialize();
@@ -777,4 +777,4 @@ namespace fawn {
         XMLPlatformUtils::Terminate();
     }
 
-} // namespace fawn
+} // namespace silt

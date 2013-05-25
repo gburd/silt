@@ -12,7 +12,7 @@
 #include <cerrno>
 #include <sstream>
 
-namespace fawn {
+namespace silt {
 
     HashTableDefault::HashTableDefault()
         : hash_table_(NULL), hash_table_size_(0), c_1_(1.), c_2_(0.)
@@ -25,7 +25,7 @@ namespace fawn {
             Close();
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Create()
     {
         if (hash_table_)
@@ -45,7 +45,7 @@ namespace fawn {
         uint64_t numObjects = hash_table_size * EXCESS_BUCKET_FACTOR;
         uint64_t max_entries = HashUtil::FindNextHashSize(numObjects);
 
-        DPRINTF(2, "CreateFawnDS table information:\n"
+        DPRINTF(2, "CreateSilt table information:\n"
                "\t hashtablesize: %"PRIu64"\n"
                "\t num_entries: %i\n"
                "\t Maximum number of entries: %"PRIu64"\n",
@@ -81,7 +81,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Open()
     {
         if (hash_table_)
@@ -97,8 +97,8 @@ namespace fawn {
         return ERROR;
     }
 
-    FawnDS_Return
-    HashTableDefault::ConvertTo(FawnDS* new_store) const
+    Silt_Return
+    HashTableDefault::ConvertTo(Silt* new_store) const
     {
         HashTableDefault* table = dynamic_cast<HashTableDefault*>(new_store);
         if (!table)
@@ -126,7 +126,7 @@ namespace fawn {
     }
 
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Flush()
     {
         if (WriteToFile())
@@ -135,7 +135,7 @@ namespace fawn {
             return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Close()
     {
         Flush();
@@ -147,7 +147,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Destroy()
     {
         std::string filename = config_->GetStringValue("child::file") + "_";
@@ -161,8 +161,8 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
-    HashTableDefault::Status(const FawnDS_StatusType& type, Value& status) const
+    Silt_Return
+    HashTableDefault::Status(const Silt_StatusType& type, Value& status) const
     {
         if (!hash_table_)
             return ERROR;
@@ -191,7 +191,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Put(const ConstValue& key, const ConstValue& data)
     {
 #ifdef DEBUG
@@ -226,7 +226,7 @@ namespace fawn {
                 lock.release();
 
                 DPRINTF(2, "HashTableDefault::Put(): no cached index for unused space\n");
-                FawnDS_Iterator it = Find(key);
+                Silt_Iterator it = Find(key);
 
                 while (!it.IsEnd())
                     ++it;
@@ -250,7 +250,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Contains(const ConstValue& key) const
     {
 #ifdef DEBUG
@@ -259,7 +259,7 @@ namespace fawn {
             print_payload((const u_char*)key.data(), key.size(), 4);
         }
 #endif
-        FawnDS_ConstIterator it = Find(key);
+        Silt_ConstIterator it = Find(key);
         if (!it.IsEnd()) {
             DPRINTF(2, "HashTableDefault::Contains(): <result> found\n");
             return OK;
@@ -270,7 +270,7 @@ namespace fawn {
         }
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Length(const ConstValue& key, size_t& len) const
     {
 #ifdef DEBUG
@@ -284,7 +284,7 @@ namespace fawn {
         return Contains(key);
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::Get(const ConstValue& key, Value& data, size_t offset, size_t len) const
     {
 #ifdef DEBUG
@@ -294,7 +294,7 @@ namespace fawn {
         }
 #endif
         // this is not very useful due to key collisions, but let's just have it
-        FawnDS_ConstIterator it = Find(key);
+        Silt_ConstIterator it = Find(key);
         if (!it.IsEnd()) {
             if (offset == 0 && len == static_cast<size_t>(-1))
                 data = it->data;
@@ -323,11 +323,11 @@ namespace fawn {
         }
     }
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     HashTableDefault::Enumerate() const
     {
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->vkey = 0;
 
         elem->current_probe_count = 0;
@@ -340,14 +340,14 @@ namespace fawn {
         elem->skip_unused = true;
 
         elem->Next();
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     HashTableDefault::Enumerate()
     {
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->vkey = 0;
 
         elem->current_probe_count = 0;
@@ -360,14 +360,14 @@ namespace fawn {
         elem->skip_unused = true;
 
         elem->Next();
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     HashTableDefault::Find(const ConstValue& key) const
     {
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->key = key;
         elem->vkey = keyfragment_from_key(key);
 
@@ -381,14 +381,14 @@ namespace fawn {
         elem->skip_unused = false;
 
         elem->Next();
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     HashTableDefault::Find(const ConstValue& key)
     {
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->key = key;
         elem->vkey = keyfragment_from_key(key);
 
@@ -402,10 +402,10 @@ namespace fawn {
         elem->skip_unused = false;
 
         elem->Next();
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
-    FawnDS_IteratorElem*
+    Silt_IteratorElem*
     HashTableDefault::IteratorElem::Clone() const
     {
         IteratorElem* elem = new IteratorElem();
@@ -416,7 +416,7 @@ namespace fawn {
     void
     HashTableDefault::IteratorElem::Next()
     {
-        const HashTableDefault* table = static_cast<const HashTableDefault*>(fawnds);
+        const HashTableDefault* table = static_cast<const HashTableDefault*>(silt);
 
         while (true) {
             if (current_probe_count >= max_probe_count) {
@@ -478,7 +478,7 @@ namespace fawn {
 #endif
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableDefault::IteratorElem::Replace(const ConstValue& data)
     {
 #ifdef DEBUG
@@ -487,7 +487,7 @@ namespace fawn {
         }
 #endif
         
-        HashTableDefault* table = static_cast<HashTableDefault*>(const_cast<FawnDS*>(fawnds));
+        HashTableDefault* table = static_cast<HashTableDefault*>(const_cast<Silt*>(silt));
 
         uint32_t new_id = data.as_number<uint32_t>(-1);
         if (new_id == static_cast<uint32_t>(-1)) {
@@ -600,4 +600,4 @@ namespace fawn {
         return 0;
     }
 
-} // namespace fawn
+} // namespace silt

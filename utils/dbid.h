@@ -21,7 +21,7 @@ using namespace std;
  * proportional to the size.
  **/
 
-namespace fawn {
+namespace silt {
     const uint32_t DBID_LENGTH = 1024;
 
     class DBID

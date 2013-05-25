@@ -13,7 +13,7 @@
 #include <cerrno>
 #include <sstream>
 
-namespace fawn {
+namespace silt {
 
     HashTableCuckoo::HashTableCuckoo()
         :hash_table_(NULL), fpf_table_(NULL)
@@ -27,7 +27,7 @@ namespace fawn {
             Close();
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableCuckoo::Create()
     {
         DPRINTF(2, "HashTableCuckoo::Create()\n");
@@ -57,7 +57,7 @@ namespace fawn {
         DPRINTF(2, "HashTableCuckoo::Create(): given table_size=%llu\n", static_cast<long long unsigned>(max_entries_));
 
 
-        DPRINTF(2, "CreateFawnDS table information:\n"
+        DPRINTF(2, "CreateSilt table information:\n"
                 "\t KEYFRAGBITS: %ld\n"
                 "\t hashtablesize: %ld\n"
                 "\t num_entries: %ld\n"
@@ -86,7 +86,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableCuckoo::Open()
     {
         DPRINTF(2, "HashTableCuckoo::Open()\n");
@@ -101,8 +101,8 @@ namespace fawn {
         
     }
 
-    FawnDS_Return
-    HashTableCuckoo::ConvertTo(FawnDS* new_store) const
+    Silt_Return
+    HashTableCuckoo::ConvertTo(Silt* new_store) const
     {
         HashTableCuckoo* new_cuckoo = dynamic_cast<HashTableCuckoo*>(new_store);
         if (!new_cuckoo) {
@@ -136,7 +136,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableCuckoo::Flush()
     {
         DPRINTF(2, "HashTableCuckoo::Flush()\n");
@@ -147,7 +147,7 @@ namespace fawn {
 
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableCuckoo::Close()
     {
         if (!hash_table_ && !fpf_table_)
@@ -169,7 +169,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableCuckoo::Destroy()
     {
         std::string filename = config_->GetStringValue("child::file") + "_";
@@ -183,8 +183,8 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
-    HashTableCuckoo::Status(const FawnDS_StatusType& type, Value& status) const
+    Silt_Return
+    HashTableCuckoo::Status(const Silt_StatusType& type, Value& status) const
     {
         if (!hash_table_ && !fpf_table_)
             return ERROR;
@@ -223,7 +223,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableCuckoo::Put(const ConstValue& key, const ConstValue& data)
     {
 #ifdef DEBUG
@@ -344,40 +344,40 @@ namespace fawn {
     } // HashTableCuckoo:Put()
 
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     HashTableCuckoo::Enumerate() const
     {
         DPRINTF(2, "HashTableCuckoo::Enumerate() const\n");
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
 
         elem->current_index = static_cast<uint32_t>(-1);
         elem->current_way = ASSOCIATIVITY - 1;
 
         elem->Next();
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     HashTableCuckoo::Enumerate()
     {
         DPRINTF(2, "HashTableCuckoo::Enumerate()\n");
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
 
         elem->current_index = static_cast<uint32_t>(-1);
         elem->current_way = ASSOCIATIVITY - 1;
 
         elem->Next();
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     HashTableCuckoo::Find(const ConstValue& key) const
     {
         DPRINTF(2, "HashTableCuckoo::Find() const\n");
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->key = key;
         for (uint32_t i = 0 ; i < NUMHASH; i++)
             elem->keyfrag[i] = keyfrag(key, i)  % max_index_;
@@ -386,15 +386,15 @@ namespace fawn {
         elem->current_way = ASSOCIATIVITY - 1;
 
         elem->Next();
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     HashTableCuckoo::Find(const ConstValue& key)
     {
         DPRINTF(2, "HashTableCuckoo::Find()\n");
         IteratorElem* elem = new IteratorElem();
-        elem->fawnds = this;
+        elem->silt = this;
         elem->key = key;
         for (uint32_t i = 0 ; i < NUMHASH; i++)
             elem->keyfrag[i] = keyfrag(key, i)  % max_index_;
@@ -403,10 +403,10 @@ namespace fawn {
         elem->current_way = ASSOCIATIVITY - 1;
 
         elem->Next();
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
-    FawnDS_IteratorElem*
+    Silt_IteratorElem*
     HashTableCuckoo::IteratorElem::Clone() const
     {
         IteratorElem* elem = new IteratorElem();
@@ -418,7 +418,7 @@ namespace fawn {
     HashTableCuckoo::IteratorElem::Next()
     {
         DPRINTF(2, "HashTableCuckoo::IteratorEnum::Next\n");
-        const HashTableCuckoo* table = static_cast<const HashTableCuckoo*>(fawnds);
+        const HashTableCuckoo* table = static_cast<const HashTableCuckoo*>(silt);
 
         bool cont = true;
 
@@ -502,7 +502,7 @@ namespace fawn {
         
     }
 
-    FawnDS_Return
+    Silt_Return
     HashTableCuckoo::IteratorElem::Replace(const ConstValue& data)
     {
 #ifdef DEBUG
@@ -510,7 +510,7 @@ namespace fawn {
             DPRINTF(2, "HashTableCuckoo::IteratorElem::Replace(): index %zu, data=%llu\n", current_index, static_cast<long long unsigned>(data.as_number<size_t>()));
         }
 #endif
-        HashTableCuckoo* table = static_cast<HashTableCuckoo*>(const_cast<FawnDS*>(fawnds));
+        HashTableCuckoo* table = static_cast<HashTableCuckoo*>(const_cast<Silt*>(silt));
 
         uint32_t new_id = data.as_number<uint32_t>(-1);
         if (new_id == static_cast<uint32_t>(-1)) {
@@ -634,4 +634,4 @@ namespace fawn {
     }
 
 
-} // namespace fawn
+} // namespace silt

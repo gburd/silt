@@ -6,7 +6,7 @@
 
 typedef uint32_t (*hashfn_t)(const void*, size_t);
 
-namespace fawn {
+namespace silt {
 
     class Hashes {
     public:
@@ -23,6 +23,6 @@ namespace fawn {
         Hashes();
     };
 
-}  // namespace fawn
+}  // namespace silt
 
 #endif  // #ifndef _HASH_FUNCTIONS_H_

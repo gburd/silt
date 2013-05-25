@@ -6,7 +6,7 @@
 
 #ifdef HAVE_LIBDB
 
-namespace fawn {
+namespace silt {
 
     BDB::BDB()
         : dbp_(NULL)
@@ -19,7 +19,7 @@ namespace fawn {
             Close();
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Create()
     {
         if (dbp_)
@@ -49,7 +49,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Open()
     {
         if (dbp_)
@@ -78,8 +78,8 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
-    BDB::ConvertTo(FawnDS* new_store) const
+    Silt_Return
+    BDB::ConvertTo(Silt* new_store) const
     {
         BDB* bdb = dynamic_cast<BDB*>(new_store);
         if (!bdb)
@@ -106,7 +106,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Flush()
     {
         if (!dbp_)
@@ -116,7 +116,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Close()
     {
         if (!dbp_)
@@ -128,7 +128,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Destroy()
     {
         if (dbp_)
@@ -156,8 +156,8 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
-    BDB::Status(const FawnDS_StatusType& type, Value& status) const
+    Silt_Return
+    BDB::Status(const Silt_StatusType& type, Value& status) const
     {
         if (!dbp_)
             return ERROR;
@@ -203,7 +203,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Put(const ConstValue& key, const ConstValue& data)
     {
         if (!dbp_)
@@ -238,7 +238,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Delete(const ConstValue& key)
     {
         if (!dbp_)
@@ -267,7 +267,7 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Contains(const ConstValue& key) const
     {
         if (!dbp_)
@@ -292,7 +292,7 @@ namespace fawn {
         }
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Length(const ConstValue& key, size_t& len) const
     {
         if (!dbp_)
@@ -323,7 +323,7 @@ namespace fawn {
         }
     }
 
-    FawnDS_Return
+    Silt_Return
     BDB::Get(const ConstValue& key, Value& data, size_t offset, size_t len) const
     {
         if (!dbp_)
@@ -333,7 +333,7 @@ namespace fawn {
             return INVALID_KEY;
 
         size_t data_len = 0;
-        FawnDS_Return ret_len = Length(key, data_len);
+        Silt_Return ret_len = Length(key, data_len);
         if (ret_len != OK)
             return ret_len;
 
@@ -364,52 +364,52 @@ namespace fawn {
         return OK;
     }
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     BDB::Enumerate() const
     {
         if (!dbp_)
-            return FawnDS_ConstIterator();
+            return Silt_ConstIterator();
 
         IteratorElem* elem = new IteratorElem(this);
 
         int ret = dbp_->cursor(dbp_, NULL, &elem->cursor, 0);
         if (ret != 0) {
             fprintf(stderr, "BDB::Enumerate(): %s\n", db_strerror(ret));
-            return FawnDS_ConstIterator();
+            return Silt_ConstIterator();
         }
 
         elem->Increment(true);
 
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     BDB::Enumerate()
     {
         if (!dbp_)
-            return FawnDS_Iterator();
+            return Silt_Iterator();
 
         IteratorElem* elem = new IteratorElem(this);
 
         int ret = dbp_->cursor(dbp_, NULL, &elem->cursor, 0);
         if (ret != 0) {
             fprintf(stderr, "BDB::Enumerate(): %s\n", db_strerror(ret));
-            return FawnDS_Iterator();
+            return Silt_Iterator();
         }
 
         elem->Increment(true);
 
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
-    FawnDS_ConstIterator
+    Silt_ConstIterator
     BDB::Find(const ConstValue& key) const
     {
         if (!dbp_)
-            return FawnDS_ConstIterator();
+            return Silt_ConstIterator();
 
         if (key.size() == 0)
-            return FawnDS_ConstIterator();
+            return Silt_ConstIterator();
 
         IteratorElem* elem = new IteratorElem(this);
 
@@ -419,22 +419,22 @@ namespace fawn {
         if (ret != 0) {
             fprintf(stderr, "BDB::Find(): %s\n", db_strerror(ret));
             delete elem;
-            return FawnDS_ConstIterator();
+            return Silt_ConstIterator();
         }
 
         elem->Increment(true);
 
-        return FawnDS_ConstIterator(elem);
+        return Silt_ConstIterator(elem);
     }
 
-    FawnDS_Iterator
+    Silt_Iterator
     BDB::Find(const ConstValue& key)
     {
         if (!dbp_)
-            return FawnDS_Iterator();
+            return Silt_Iterator();
 
         if (key.size() == 0)
-            return FawnDS_Iterator();
+            return Silt_Iterator();
 
         IteratorElem* elem = new IteratorElem(this);
 
@@ -444,17 +444,17 @@ namespace fawn {
         if (ret != 0) {
             fprintf(stderr, "BDB::Find(): %s\n", db_strerror(ret));
             delete elem;
-            return FawnDS_Iterator();
+            return Silt_Iterator();
         }
 
         elem->Increment(true);
 
-        return FawnDS_Iterator(elem);
+        return Silt_Iterator(elem);
     }
 
-    BDB::IteratorElem::IteratorElem(const BDB* fawnds)
+    BDB::IteratorElem::IteratorElem(const BDB* silt)
     {
-        this->fawnds = fawnds;
+        this->silt = silt;
     }
 
     BDB::IteratorElem::~IteratorElem()
@@ -463,10 +463,10 @@ namespace fawn {
         cursor = NULL;
     }
 
-    FawnDS_IteratorElem*
+    Silt_IteratorElem*
     BDB::IteratorElem::Clone() const
     {
-        IteratorElem* elem = new IteratorElem(static_cast<const BDB*>(fawnds));
+        IteratorElem* elem = new IteratorElem(static_cast<const BDB*>(silt));
         *elem = *this;
         int ret = cursor->dup(cursor, &elem->cursor, DB_POSITION);
         if (ret != 0) {
@@ -556,6 +556,6 @@ namespace fawn {
         data.resize(data_v.size);
     }
 
-}  // namespace fawn
+}  // namespace silt
 
 #endif

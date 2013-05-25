@@ -2,7 +2,7 @@
 #include "hash_functions.h"
 #include "hashutil.h"
 
-namespace fawn {
+namespace silt {
 
     hashfn_t Hashes::hashes[HASH_COUNT] = { &Hashes::h1,
                                             &Hashes::h2,
@@ -40,4 +40,4 @@ namespace fawn {
         return HashUtil::NullHash(buf, len, 8);
     }
 
-}  // namespace fawn
+}  // namespace silt

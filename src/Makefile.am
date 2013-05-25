@@ -1,7 +1,7 @@
-noinst_LTLIBRARIES = libfawnds.la
-libfawnds_la_CPPFLAGS = -I$(top_srcdir)/utils -D_FILE_OFFSET_BITS=64 \
+noinst_LTLIBRARIES = libsilt.la
+libsilt_la_CPPFLAGS = -I$(top_srcdir)/utils -D_FILE_OFFSET_BITS=64 \
 			-I$(builddir)/gen-cpp -Icindex
-libfawnds_la_LIBADD = $(top_builddir)/utils/libfawnkvutils.la
+libsilt_la_LIBADD = $(top_builddir)/utils/libsiltkvutils.la
 
 
 noinst_HEADERS = 	DOMTreeErrorReporter.hpp	\
@@ -12,44 +12,44 @@ noinst_HEADERS = 	DOMTreeErrorReporter.hpp	\
 			value.h				\
 			rate_limiter.h			\
 			global_limits.h         \
-			fawnds_types.h			\
-			fawnds_iterator.h		\
-			fawnds.h			\
-			fawnds_factory.h		\
+			silt_types.h			\
+			silt_iterator.h		\
+			silt.h			\
+			silt_factory.h		\
 			hash_functions.h		\
 			hash_table_default.h		\
 			hash_table_cuckoo.h		\
 			file_store.h			\
 			sorter.h			\
-			fawnds_partition.h		\
-			fawnds_combi.h			\
-			fawnds_sf.h			\
-			fawnds_sf_ordered_trie.h	\
-			fawnds_proxy.h			\
-			fawnds_monitor.h		\
+			silt_partition.h		\
+			silt_combi.h			\
+			silt_sf.h			\
+			silt_sf_ordered_trie.h	\
+			silt_proxy.h			\
+			silt_monitor.h		\
 			bdb.h
 
-libfawnds_la_SOURCES =  DOMTreeErrorReporter.cpp	\
+libsilt_la_SOURCES =  DOMTreeErrorReporter.cpp	\
 			DOMWriteErrorHandler.cpp	\
 			configuration.cc		\
 			file_io.cc			\
 			task.cc				\
 			rate_limiter.cc			\
 			global_limits.cc         \
-			fawnds_iterator.cc		\
-			fawnds.cc			\
-			fawnds_factory.cc		\
+			silt_iterator.cc		\
+			silt.cc			\
+			silt_factory.cc		\
 			hash_functions.cc		\
 			hash_table_default.cc		\
 			hash_table_cuckoo.cc		\
 			file_store.cc			\
 			sorter.cc			\
-			fawnds_partition.cc		\
-			fawnds_combi.cc			\
-			fawnds_sf.cc			\
-			fawnds_sf_ordered_trie.cc			\
-			fawnds_proxy.cc			\
-			fawnds_monitor.cc			\
+			silt_partition.cc		\
+			silt_combi.cc			\
+			silt_sf.cc			\
+			silt_sf_ordered_trie.cc			\
+			silt_proxy.cc			\
+			silt_monitor.cc			\
 			bdb.cc				\
 			cindex/bit_access.cpp			\
 			cindex/bit_vector.cpp			\
@@ -68,9 +68,9 @@ CLEANFILES = $(BUILT_SOURCES)
 # shared.  This can help with development because a change to
 # this library doesn't require re-building libs and programs
 # that link against this library
-#libfawnds_la_LDFLAGS = -rpath `pwd`
+#libsilt_la_LDFLAGS = -rpath `pwd`
 
-noinst_PROGRAMS = fawnds_bench
-fawnds_bench_SOURCES = fawnds_bench.cc
-fawnds_bench_CPPFLAGS = -I$(top_srcdir)/utils -I$(builddir)/gen-cpp
-fawnds_bench_LDADD = $(top_builddir)/utils/libfawnkvutils.la libfawnds.la -lxerces-c
+noinst_PROGRAMS = silt_bench
+silt_bench_SOURCES = silt_bench.cc
+silt_bench_CPPFLAGS = -I$(top_srcdir)/utils -I$(builddir)/gen-cpp
+silt_bench_LDADD = $(top_builddir)/utils/libsiltkvutils.la libsilt.la -lxerces-c

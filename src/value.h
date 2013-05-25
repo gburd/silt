@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <string>
 
-namespace fawn {
+namespace silt {
 
 	class ConstValue
 	{
@@ -321,6 +321,6 @@ namespace fawn {
         char buf_[buf_size_];
     };
 
-} // namespace fawn
+} // namespace silt
 
 #endif  // #ifndef _VALUE_H_
