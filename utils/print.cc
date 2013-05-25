@@ -1,6 +1,7 @@
 /* -*- Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 #include <iostream>
 #include <stdio.h>
+#include <unistd.h>
 #include "print.h"
 
 void bytes_into_hex_string(const u_char *data, u_int len, string& dststr)
@@ -192,7 +193,7 @@ void int_to_bit (const uint32_t i, int w )
         b = (((i & z) == z) ? "1" : "0") + b;
     }
     cout << "bit[0.."<< w-1 << "]=" << b << endl;
-} 
+}
 
 int fill_file_with_zeros(int fd, size_t nbytes)
 {
@@ -228,4 +229,3 @@ int getPort(string id)
     string p = id.substr(id.find(":")+1, id.size());
     return strtol(p.c_str(), NULL, 10);
 }
-

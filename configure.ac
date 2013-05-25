@@ -1,14 +1,19 @@
-AC_PREREQ(2.61)
-AC_INIT([silt], [0.1], [fawn-dev@mailman.srv.cs.cmu.edu])
-AM_INIT_AUTOMAKE
-LT_PREREQ([2.2])
+AC_PREREQ(2.63)
+AC_INIT([silt], [1.0.1], [fawn-dev@mailman.srv.cs.cmu.edu])
+AM_INIT_AUTOMAKE([1.10 foreign])
+LT_PREREQ([2.4.2])
 LT_INIT([dlopen])
 
 AC_CONFIG_HEADER([config.h])
 
-CFLAGS="-g -O3" # -fno-omit-frame-pointer
-CPPFLAGS="-g -O3" # -fno-omit-frame-pointer
-CXXFLAGS="-g -O3" # -fno-omit-frame-pointer
+# If CFLAGS was not set on entry and we are not debugging, default to -O3
+silt_test_CFLAGS=${CFLAGS+set}
+if test "$silt_test_CFLAGS" != set && test "$silt_cv_enable_debug" != "yes"; then
+	CFLAGS="-O3 -march=native -mtune=native"
+fi
+
+# Debug
+# CFLAGS="-O0 -g -fno-omit-frame-pointer"
 
 # Checks for programs.
 AC_PROG_CXX
@@ -18,6 +23,15 @@ AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 AC_CONFIG_MACRO_DIR([m4])
 
+# Add debugging flags if requested and not already in CFLAGS
+if test "$silt_cv_enable_debug" = "yes"; then
+	case "$CFLAGS" in
+		*-g*)	;;
+		*)	AM_CFLAGS="$AM_CFLAGS -g" ;;
+	esac
+fi
+
+AM_CONDITIONAL([DEBUG], [test "$silt_cv_enable_debug" = "yes"])
 
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lgtest':
@@ -27,7 +41,7 @@ AC_LANG_CPLUSPLUS
 AC_CHECK_LIB([tbb], [main], [], [echo "libtbb not found.  Please install the Intel TBB before proceeding."; exit -1])
 AC_CHECK_LIB([gtest_main], [main], [], [echo "gtest_main not found.  Please install google test library before proceeding"; exit -1])
 AC_CHECK_LIB([pthread], [pthread_mutex_init], [], [echo "pthreads not found.  Please install pthread library before proceeding"; exit -1])
-AC_CHECK_LIB([boost_thread-mt], [main], [], [echo "boost library not found.  Please install boost library before proceeding"; exit -1])
+AC_CHECK_LIB([boost_thread], [main], [], [echo "boost library not found.  Please install boost library before proceeding"; exit -1])
 AC_CHECK_LIB([crypto], [main], [], [echo "openssl crypto library not found.  Please install openssl library before proceeding"; exit -1])
 AC_CHECK_LIB([xerces-c], [main], [], [echo "Xerces XML parsing library not found.  Please install xerces library before proceeding"; exit -1])
 AC_CHECK_LIB([m], [cos], [], [echo "m library not found.  Please install m library before proceeding"; exit -1])
@@ -66,16 +80,32 @@ AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_FUNC_SELECT_ARGTYPES
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([bzero ftruncate gethostbyname getpagesize gettimeofday inet_ntoa memchr memmove memset munmap select socket strdup strerror strtol strtoul strtoull])
+AC_CHECK_FUNCS([\
+	bzero \
+	ftruncate \
+	gethostbyname \
+	getpagesize \
+	gettimeofday \
+	inet_ntoa \
+	memchr \
+	memmove \
+	memset \
+	munmap \
+	select \
+	socket \
+	strdup \
+	strerror \
+	strtol \
+	strtoul \
+	strtoull \
+	])
 
-#CFLAGS="$CFLAGS -Wall -Wextra"
-#CXXFLAGS="$CXXFLAGS -Wall -Wextra"
+CFLAGS="$CFLAGS -Wall -Wextra"
 
 AC_CONFIG_FILES([ Makefile
 		  utils/Makefile
-		  fawnds/Makefile
+		  src/Makefile
 		  test/Makefile
 		  test/fawnds/Makefile
 		])
-
 AC_OUTPUT

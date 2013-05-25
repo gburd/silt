@@ -1,6 +1,6 @@
 noinst_LTLIBRARIES = libfawnds.la
 libfawnds_la_CPPFLAGS = -I$(top_srcdir)/utils -D_FILE_OFFSET_BITS=64 \
-			-I$(builddir)/gen-cpp -Icindex -g
+			-I$(builddir)/gen-cpp -Icindex
 libfawnds_la_LIBADD = $(top_builddir)/utils/libfawnkvutils.la
 
 
@@ -11,7 +11,7 @@ noinst_HEADERS = 	DOMTreeErrorReporter.hpp	\
 			task.h				\
 			value.h				\
 			rate_limiter.h			\
-            global_limits.h         \
+			global_limits.h         \
 			fawnds_types.h			\
 			fawnds_iterator.h		\
 			fawnds.h			\
@@ -35,7 +35,7 @@ libfawnds_la_SOURCES =  DOMTreeErrorReporter.cpp	\
 			file_io.cc			\
 			task.cc				\
 			rate_limiter.cc			\
-            global_limits.cc         \
+			global_limits.cc         \
 			fawnds_iterator.cc		\
 			fawnds.cc			\
 			fawnds_factory.cc		\
@@ -59,7 +59,7 @@ libfawnds_la_SOURCES =  DOMTreeErrorReporter.cpp	\
 			cindex/twolevel_reloff_bucketing.cpp	\
 			cindex/semi_direct_16_absoff_bucketing.cpp	\
 			cindex/semi_direct_16_reloff_bucketing.cpp	\
-			cindex/bucketing_index.cpp			
+			cindex/bucketing_index.cpp
 
 CLEANFILES = $(BUILT_SOURCES)
 
@@ -72,6 +72,5 @@ CLEANFILES = $(BUILT_SOURCES)
 
 noinst_PROGRAMS = fawnds_bench
 fawnds_bench_SOURCES = fawnds_bench.cc
-fawnds_bench_CPPFLAGS = -I$(top_srcdir)/utils -I$(builddir)/gen-cpp -g
+fawnds_bench_CPPFLAGS = -I$(top_srcdir)/utils -I$(builddir)/gen-cpp
 fawnds_bench_LDADD = $(top_builddir)/utils/libfawnkvutils.la libfawnds.la -lxerces-c
-
