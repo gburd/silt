@@ -1,0 +1,1 @@
+{"silt":{"key-len":20,"data-len":1000,"size":100000,"store-count":1000,"merge-size":32,"get-count":100000000,"temp-file":"./tmp/","include":[{"file":"exp_common.xml","src":"child::store0","dest":"."},{"file":"exp_common.xml","src":"child::store1","dest":"."},{"file":"exp_common.xml","src":"child::store2","dest":"."}]}}

@@ -1,0 +1,1 @@
+{"silt":{"type":["monitor","sf"],"id":0,"file":"./testFiles/file_header","hashtable":{"type":"default","id":{},"file":"./testFiles/hashtable","hash-table-size":2097152},"datastore":{"type":"file","id":{},"data-len":{},"use-buffered-io-only":1,"file":"./testFiles/datastore"}}}

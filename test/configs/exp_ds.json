@@ -1,0 +1,1 @@
+{"silt":{"include":{"file":"exp_dis.xml","src":"child::store","dest":"."},"set":[{"node":"child::store/store1/hashtable/use-offset","value":1},{"node":"child::store/store1/keep-datastore-on-conversion","value":1}]}}

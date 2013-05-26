@@ -1,0 +1,1 @@
+{"silt":{"type":["monitor","partition"],"id":0,"skip-bits":0,"partitions":32,"include":{"file":"exp_dis.xml","src":"child::store","dest":"."},"set":[{"node":"child::store/store0/hashtable/hash-table-size","value":131072},{"node":"child::store/store1/hashtable/hash-table-size","value":131072},{"node":"child::store/store2/skip-bits","value":5}]}}
