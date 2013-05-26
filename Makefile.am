@@ -1,4 +1,4 @@
-ACLOCAL_AMFLAGS=-I m4
+ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = utils src test
 CLEANFILES = core *.core *~

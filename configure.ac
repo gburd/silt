@@ -12,9 +12,6 @@ if test "$silt_test_CFLAGS" != set && test "$silt_cv_enable_debug" != "yes"; the
 	CFLAGS="-O3 -march=native -mtune=native"
 fi
 
-# Debug
-# CFLAGS="-O0 -g -fno-omit-frame-pointer"
-
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
@@ -27,7 +24,7 @@ AC_CONFIG_MACRO_DIR([m4])
 if test "$silt_cv_enable_debug" = "yes"; then
 	case "$CFLAGS" in
 		*-g*)	;;
-		*)	AM_CFLAGS="$AM_CFLAGS -g" ;;
+		*)	AM_CFLAGS="$AM_CFLAGS -g -O0 -fno-omit-frame-pointer" ;;
 	esac
 fi
 
@@ -104,9 +101,8 @@ CFLAGS="$CFLAGS -Wall -Wextra"
 CXXFLAGS="$CFLAGS"
 
 AC_CONFIG_FILES([ Makefile
-		  utils/Makefile
 		  src/Makefile
+		  utils/Makefile
 		  test/Makefile
-		  test/silt/Makefile
 		])
 AC_OUTPUT

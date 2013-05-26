@@ -33,7 +33,7 @@ void benchmark()
                         int fd = open(buf, O_WRONLY | O_CREAT, 0666);
 #else
                         int fd = open(buf, O_WRONLY | O_CREAT | O_NOATIME, 0666);
-
+#endif
 			if (fd == -1) {
 				perror("");
 				return;
