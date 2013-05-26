@@ -1,3 +1,45 @@
+/* -*- Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
+
+/*-
+ * SILT: A Memory-Efficient, High-Performance Key-Value Store
+ *
+ * Copyright © 2011 Carnegie Mellon University
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at: http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
+ * OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY DERIVATIVES THEREOF,
+ * EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. THIS SOFTWARE IS
+ * PROVIDED ON AN "AS IS" BASIS, AND THE AUTHORS AND DISTRIBUTORS HAVE NO
+ * OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+ * MODIFICATIONS.
+ *
+ * GOVERNMENT USE: If you are acquiring this software on behalf of the
+ * U.S. government, the Government shall have only "Restricted Rights" in the
+ * software and related documentation as defined in the Federal Acquisition
+ * Regulations (FARs) in Clause 52.227.19 (c) (2). If you are acquiring the
+ * software on behalf of the Department of Defense, the software shall be
+ * classified as "Commercial Computer Software" and the Government shall have
+ * only "Restricted Rights" as defined in Clause 252.227-7013 (c) (1) of
+ * DFARs. Notwithstanding the foregoing, the authors grant the U.S. Government
+ * and others acting in its behalf permission to use and distribute the
+ * software in accordance with the terms specified in this license.
+ */
+
 #include "silt_sf_ordered_binarysearch.h"
 #include <boost/functional/hash.hpp>    // for debugging (hash_state())
 
@@ -13,7 +55,7 @@ namespace silt
     }
 
     template <typename Store>
-    Silt_SF_Ordered_BinarySearch<Store>* 
+    Silt_SF_Ordered_BinarySearch<Store>*
     Silt_SF_Ordered_BinarySearch<Store>::Open(Configuration* const &config)
     {
         Silt_SF_Ordered_BinarySearch<Store>* silt = new Silt_SF_Ordered_BinarySearch<Store>(config);
@@ -81,7 +123,7 @@ namespace silt
             perror("Silt_SF_Ordered_BinarySearch: LoadFromFile: could not open index file");
             return;
         }
-        
+
         // read base offset
         if (read(fd, &base_data_store_offset_, sizeof(base_data_store_offset_)) != sizeof(base_data_store_offset_)) {
             fprintf(stderr, "Silt_SF_Ordered_BinarySearch: LoadFromFile: unable to read base offset\n");
@@ -165,10 +207,10 @@ namespace silt
     }
 
     template <typename Store>
-    int 
+    int
     Silt_SF_Ordered_BinarySearch<Store>::Insert(const char* const &key,
-                                    const uint32_t &key_len, 
-                                    const char* const &data, 
+                                    const uint32_t &key_len,
+                                    const char* const &data,
                                     const uint32_t &data_len)
     {
 #ifdef DEBUG
@@ -206,7 +248,7 @@ namespace silt
             return -1;
         }
         memcpy(last_inserted_key_, key, key_len);
-        
+
         // put key-data to datastore
         off_t data_store_offset = data_store_->getCurrentOffset();
         if (data_store_->Put(data_store_offset, key_len, data_len, key, data) != 0) {
@@ -222,7 +264,7 @@ namespace silt
 
         return 0;
     }
-    
+
     template <typename Store>
     int
     Silt_SF_Ordered_BinarySearch<Store>::Get(const char* const &key, const uint32_t &key_len, char* &data, uint32_t &data_len)
@@ -250,7 +292,7 @@ namespace silt
             fprintf(stderr, "Silt_SF_Ordered_BinarySearch: Get: not finalized\n");
             return -1;
         }
-        
+
         std::size_t key_index = lookup_key_index(key, 0, actual_size_);
         if (key_index != static_cast<std::size_t>(-1))
         {
@@ -269,7 +311,7 @@ namespace silt
             DPRINTF(2, "Get! Data: %s\n", data);
             return 0;
         }
-            
+
         pthread_rwlock_unlock(&silt_lock_);
         fprintf(stderr, "Can't find data for given key.\n");
         return -1;
@@ -291,7 +333,7 @@ namespace silt
         return data_store_->DoForEach(callForEach, callBeforeRest);
     }
     */
-    
+
     template <typename Store>
     int
     Silt_SF_Ordered_BinarySearch<Store>::Flush()
@@ -315,7 +357,7 @@ namespace silt
         pthread_rwlock_unlock(&silt_lock_);
         return 0;
     }
-    
+
     template <typename Store>
     int
     Silt_SF_Ordered_BinarySearch<Store>::Destroy()
@@ -396,4 +438,3 @@ namespace silt
 
     template class Silt_SF_Ordered_BinarySearch<FileStore_bare>;
 }  // namespace silt
-

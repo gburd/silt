@@ -1,0 +1,8 @@
+
+* search for, address TODO:
+* replace fprintf/printf calls with log()
+* change XML to JSON config
+* change rate limiter to use hardware clock ticks
+* add stats package, measure/account everything
+* mv src/silt_bench to test? or utils?
+* replace Intel TBB with C++11 native threads/atomics
