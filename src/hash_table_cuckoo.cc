@@ -98,7 +98,7 @@ namespace silt {
                 return OK;
 
         return ERROR;
-        
+
     }
 
     Silt_Return
@@ -237,7 +237,7 @@ namespace silt {
         DPRINTF(2, "HashTableCuckoo::Put(): key=\n");
         //print_payload((const u_char*)key.data(), key.size(), 4);
         DPRINTF(2, "HashTableCuckoo::Put(): data=%llu\n", static_cast<long long unsigned>(data.as_number<size_t>()));
-        
+
         // for undo correctness checking
         //uint32_t init_checksum = Hashes::h1(hash_table_, sizeof(TagValStoreEntry) * max_index_);
 
@@ -432,7 +432,7 @@ namespace silt {
                 if (key.size() != 0) {
                     // Find()
 
-                    current_keyfrag_id ++;        
+                    current_keyfrag_id ++;
 
                     if (current_keyfrag_id >= NUMHASH) {
                         state = END;
@@ -475,7 +475,7 @@ namespace silt {
                     // key mismatch
                     continue;
                 }
-                
+
             }
             else {
                 // unused space
@@ -483,7 +483,7 @@ namespace silt {
             }
 
             state = OK;
-            uint32_t v = table->val(current_index, current_way);        
+            uint32_t v = table->val(current_index, current_way);
             data = NewValue(&v);
             break;
 
@@ -499,7 +499,7 @@ namespace silt {
         }
         */
 #endif
-        
+
     }
 
     Silt_Return
@@ -577,7 +577,11 @@ namespace silt {
                 return -1;
             }
         }
+#ifdef __APPLE__
+        fcntl(fd, F_FULLFSYNC);
+#else
         fdatasync(fd);
+#endif
         if (close(fd) == -1)
             {
                 perror("Could not close file");
@@ -599,7 +603,7 @@ namespace silt {
                 perror("Could not open file");
                 return -1;
             }
-        
+
         // TODO: support for fpf_table
 
         uint64_t offset = 0;

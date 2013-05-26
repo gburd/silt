@@ -49,7 +49,7 @@ AC_CHECK_LIB([gslcblas], [cblas_dgemm], [], [echo "gsl library not found.  Pleas
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm], [], [echo "gsl library not found.  Please install gsl library before proceeding"; exit -1])
 AC_CHECK_LIB([nsort], [nsort_define], [], [echo "nsort library not found.  An inferior sorting will be used."])
 AC_CHECK_LIB([db], [db_create], [], [echo "Berkeley Database library not found.  Support for BDB will be excluded."])
-
+AC_CHECK_LIB([rt], [main], [], [echo "rt."])
 
 # Checks for header files.
 AC_HEADER_STDC

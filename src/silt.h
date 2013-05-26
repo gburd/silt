@@ -11,7 +11,7 @@ namespace silt {
 
     class Configuration;
 
-    // common interface for FAWN-DS stores
+    // common interface for Silt stores
     class Silt {
     public:
         Silt();

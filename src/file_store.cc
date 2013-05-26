@@ -549,9 +549,14 @@ namespace silt {
         }
 
         //fprintf(stderr, "use_buffered_io_only_ = %d\n", use_buffered_io_only_);
-        if (!use_buffered_io_only_)
+        if (!use_buffered_io_only_) {
+#ifdef __APPLE__
+            fd_direct_random_ = open(pathname, flags & ~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY, mode);
+            fcntl(fd_direct_random_, F_NOCACHE, 1);
+#else
             fd_direct_random_ = open(pathname, flags & ~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY | O_DIRECT, mode);
-        else {
+#endif
+        } else {
             fd_direct_random_ = open(pathname, flags & ~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY, mode);
         }
         if (fd_direct_random_ == -1) {
@@ -888,7 +893,13 @@ namespace silt {
             file_store->syncing_chunk_ = file_store->dirty_chunk_;
         }
 
-        if (fdatasync(file_store->fd_buffered_sequential_)) {
+        if (
+#ifdef __APPLE__
+        fcntl(file_store->fd_buffered_sequential_, F_FULLFSYNC)
+#else
+        fdatasync(file_store->fd_buffered_sequential_)
+#endif
+            ) {
             fprintf(stderr, "FileStore::int_pread(): cannot sync: %s\n", strerror(errno));
             return;
         }

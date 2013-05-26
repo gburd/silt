@@ -951,7 +951,11 @@ Silt_SF::WriteHeaderToFile() const {
         return ERROR;
     }
 
-    fdatasync(fd);
+#ifdef __APPLE__
+        fcntl(fd, F_FULLFSYNC);
+#else
+        fdatasync(fd);
+#endif
     close(fd);
     return OK;
 }
@@ -986,4 +990,3 @@ Silt_SF::ReadHeaderFromFile()
 }
 
 }  // namespace silt
-

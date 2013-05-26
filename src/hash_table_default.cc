@@ -486,7 +486,7 @@ namespace silt {
             DPRINTF(2, "HashTableDefault::IteratorElem::Replace(): index %zu, data=%llu\n", current_index, static_cast<long long unsigned>(data.as_number<size_t>()));
         }
 #endif
-        
+
         HashTableDefault* table = static_cast<HashTableDefault*>(const_cast<Silt*>(silt));
 
         uint32_t new_id = data.as_number<uint32_t>(-1);
@@ -545,7 +545,11 @@ namespace silt {
                 return -1;
             }
         }
+#ifdef __APPLE__
+        fcntl(fd, F_FULLFSYNC);
+#else
         fdatasync(fd);
+#endif
         if (close(fd) == -1)
             {
                 perror("Could not close file");

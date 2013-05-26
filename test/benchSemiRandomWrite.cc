@@ -29,7 +29,11 @@ void benchmark()
 			char buf[1024];
 			sprintf(buf, "file%zu", j);
 
-			int fd = open(buf, O_WRONLY | O_CREAT | O_NOATIME, 0666);
+#ifdef __APPLE__
+                        int fd = open(buf, O_WRONLY | O_CREAT, 0666);
+#else
+                        int fd = open(buf, O_WRONLY | O_CREAT | O_NOATIME, 0666);
+
 			if (fd == -1) {
 				perror("");
 				return;
@@ -78,4 +82,3 @@ int main(int argc, char** argv) {
 	benchmark();
 	return 0;
 }
-

@@ -13,6 +13,25 @@
 
 #include "preprocessTrace.h"
 
+#ifdef __APPLE__
+#include <mach/mach_time.h>
+#define CLOCK_MONOTONIC_RAW 1
+
+static void clock_gettime(int flags, struct timespec *ts)
+{
+    static mach_timebase_info_data_t s_timebase_info;
+
+    if (s_timebase_info.denom == 0)
+        (void) mach_timebase_info(&s_timebase_info);
+
+    ts->tv_sec = 0;  /* time_t   tv_sec;  seconds */
+    /* mach_absolute_time() returns billionth of seconds, so divide by one million to get milliseconds */
+    /* long tv_nsec; nanoseconds */
+    ts->tv_nsec = (long)((mach_absolute_time() * s_timebase_info.numer) / ((1000 * 1000) * s_timebase_info.denom));
+}
+#endif
+
+
 using namespace std;
 using namespace tbb;
 using namespace silt;
