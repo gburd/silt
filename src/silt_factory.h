@@ -53,9 +53,9 @@
 namespace silt {
 
     class Silt_Factory {
-    public:
-        static Silt* New(std::string config_file);
-        static Silt* New(const Configuration* config);
+        public:
+            static Silt *New(std::string config_file);
+            static Silt *New(const Configuration *config);
     };
 
 } // namespace silt

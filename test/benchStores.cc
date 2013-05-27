@@ -500,7 +500,7 @@ void benchmark()
 
 int main(int argc, char** argv) {
     load_params();
-	benchmark();
+    benchmark();
 
-	return 0;
+    return 0;
 }

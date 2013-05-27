@@ -75,104 +75,104 @@ namespace silt {
     //             <size>: will be set by Silt_Combi
 
     class Silt_Combi : public Silt {
-    public:
-        Silt_Combi();
-        virtual ~Silt_Combi();
-
-        virtual Silt_Return Create();
-        virtual Silt_Return Open();
-
-        virtual Silt_Return Flush();
-        virtual Silt_Return Close();
-
-        virtual Silt_Return Destroy();
-
-        virtual Silt_Return Status(const Silt_StatusType& type, Value& status) const;
-
-        virtual Silt_Return Put(const ConstValue& key, const ConstValue& data);
-        virtual Silt_Return Append(Value& key, const ConstValue& data);
-
-        virtual Silt_Return Delete(const ConstValue& key);
-
-        virtual Silt_Return Contains(const ConstValue& key) const;
-        virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
-        virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
-
-        virtual Silt_ConstIterator Enumerate() const;
-        virtual Silt_Iterator Enumerate();
-
-        //virtual Silt_ConstIterator Find(const ConstValue& key) const;
-        //virtual Silt_Iterator Find(const ConstValue& key);
-
-        struct IteratorElem : public Silt_IteratorElem {
-            IteratorElem(const Silt_Combi* silt);
-            ~IteratorElem();
-
-            Silt_IteratorElem* Clone() const;
-            void Next();
-
-            tbb::queuing_rw_mutex::scoped_lock* lock;
-            size_t current_stage;
-            size_t current_store;
-            Silt_Iterator store_it;
-        };
-
-    protected:
-        Silt* alloc_store(size_t stage, size_t size = -1);
-
-        class ConvertTask : public Task {
         public:
-            virtual void Run();
-            Silt_Combi* silt;
+            Silt_Combi();
+            virtual ~Silt_Combi();
 
-            Silt* convert(Silt* front_store);
-        };
+            virtual Silt_Return Create();
+            virtual Silt_Return Open();
 
-        class MergeTask : public Task {
-        public:
-            virtual void Run();
-            Silt_Combi* silt;
+            virtual Silt_Return Flush();
+            virtual Silt_Return Close();
 
-            Silt* sort(Silt* sorter, Silt* middle_store, size_t& num_adds, size_t& num_dels);
-            Silt* merge(Silt* back_store, Silt* sorter, size_t& num_adds, size_t& num_dels);
-        };
+            virtual Silt_Return Destroy();
 
-    private:
-        bool open_;
+            virtual Silt_Return Status(const Silt_StatusType &type, Value &status) const;
 
-        std::string id_;
+            virtual Silt_Return Put(const ConstValue &key, const ConstValue &data);
+            virtual Silt_Return Append(Value &key, const ConstValue &data);
 
-        size_t key_len_;
-        size_t data_len_;
+            virtual Silt_Return Delete(const ConstValue &key);
 
-        std::string temp_file_;
+            virtual Silt_Return Contains(const ConstValue &key) const;
+            virtual Silt_Return Length(const ConstValue &key, size_t &len) const;
+            virtual Silt_Return Get(const ConstValue &key, Value &data, size_t offset = 0, size_t len = -1) const;
 
-        size_t stage_limit_;
+            virtual Silt_ConstIterator Enumerate() const;
+            virtual Silt_Iterator Enumerate();
 
-        size_t store0_high_watermark_;
-        size_t store0_low_watermark_;
+            //virtual Silt_ConstIterator Find(const ConstValue& key) const;
+            //virtual Silt_Iterator Find(const ConstValue& key);
 
-        size_t store1_high_watermark_;
-        size_t store1_low_watermark_;
+            struct IteratorElem : public Silt_IteratorElem {
+                IteratorElem(const Silt_Combi *silt);
+                ~IteratorElem();
 
-        mutable tbb::queuing_rw_mutex mutex_;
+                Silt_IteratorElem *Clone() const;
+                void Next();
 
-        std::vector<std::vector<Silt*> > all_stores_;     // protected by mutex_
-        std::vector<size_t> next_ids_;                    // protected by mutex_
+                tbb::queuing_rw_mutex::scoped_lock *lock;
+                size_t current_stage;
+                size_t current_store;
+                Silt_Iterator store_it;
+            };
 
-        size_t back_store_size_;
+        protected:
+            Silt *alloc_store(size_t stage, size_t size = -1);
 
-        tbb::atomic<bool> convert_task_running_;    // also protected by mutex_
-        tbb::atomic<bool> merge_task_running_;      // also protected by mutex_
+            class ConvertTask : public Task {
+                public:
+                    virtual void Run();
+                    Silt_Combi *silt;
 
-        friend class MergeTask;
+                    Silt *convert(Silt *front_store);
+            };
 
-        static TaskScheduler task_scheduler_convert_;
-        static TaskScheduler task_scheduler_merge_;
+            class MergeTask : public Task {
+                public:
+                    virtual void Run();
+                    Silt_Combi *silt;
 
-        static const size_t latency_track_store_count_ = 100;
-        mutable tbb::atomic<uint64_t> latencies_[4][latency_track_store_count_];
-        mutable tbb::atomic<uint64_t> counts_[4][latency_track_store_count_];
+                    Silt *sort(Silt *sorter, Silt *middle_store, size_t &num_adds, size_t &num_dels);
+                    Silt *merge(Silt *back_store, Silt *sorter, size_t &num_adds, size_t &num_dels);
+            };
+
+        private:
+            bool open_;
+
+            std::string id_;
+
+            size_t key_len_;
+            size_t data_len_;
+
+            std::string temp_file_;
+
+            size_t stage_limit_;
+
+            size_t store0_high_watermark_;
+            size_t store0_low_watermark_;
+
+            size_t store1_high_watermark_;
+            size_t store1_low_watermark_;
+
+            mutable tbb::queuing_rw_mutex mutex_;
+
+            std::vector<std::vector<Silt *> > all_stores_;    // protected by mutex_
+            std::vector<size_t> next_ids_;                    // protected by mutex_
+
+            size_t back_store_size_;
+
+            tbb::atomic<bool> convert_task_running_;    // also protected by mutex_
+            tbb::atomic<bool> merge_task_running_;      // also protected by mutex_
+
+            friend class MergeTask;
+
+            static TaskScheduler task_scheduler_convert_;
+            static TaskScheduler task_scheduler_merge_;
+
+            static const size_t latency_track_store_count_ = 100;
+            mutable tbb::atomic<uint64_t> latencies_[4][latency_track_store_count_];
+            mutable tbb::atomic<uint64_t> counts_[4][latency_track_store_count_];
     };
 
 } // namespace silt

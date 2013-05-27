@@ -44,445 +44,444 @@
 #include "print.h"
 #include <sstream>
 
-namespace silt
-{
-	Silt_SF_Ordered_Trie::Silt_SF_Ordered_Trie()
-		: index_(NULL), data_store_(NULL)
-	{
-	}
+namespace silt {
+    Silt_SF_Ordered_Trie::Silt_SF_Ordered_Trie()
+        : index_(NULL), data_store_(NULL)
+    {
+    }
 
-	Silt_SF_Ordered_Trie::~Silt_SF_Ordered_Trie()
-	{
-		if (index_)
-			Close();
-	}
+    Silt_SF_Ordered_Trie::~Silt_SF_Ordered_Trie()
+    {
+        if (index_)
+            Close();
+    }
 
-	Silt_Return
-	Silt_SF_Ordered_Trie::Create()
-	{
-		if (index_)
-			return ERROR;
+    Silt_Return
+    Silt_SF_Ordered_Trie::Create()
+    {
+        if (index_)
+            return ERROR;
 
         key_len_ = atoi(config_->GetStringValue("child::key-len").c_str());
         data_len_ = atoi(config_->GetStringValue("child::data-len").c_str());
         keys_per_block_ = atoi(config_->GetStringValue("child::keys-per-block").c_str());
-
         size_ = atoi(config_->GetStringValue("child::size").c_str());
         bucket_size_ = atoi(config_->GetStringValue("child::bucket-size").c_str());
-
         skip_bits_ = atoi(config_->GetStringValue("child::skip-bits").c_str());
+        actual_size_ = 0;
 
-		actual_size_ = 0;
+        if (key_len_ == 0) {
+            fprintf(stderr, "Silt_SF_Ordered_Trie::Create(): invalid key length\n");
+            return ERROR;
+        }
 
-		if (key_len_ == 0) {
-			fprintf(stderr, "Silt_SF_Ordered_Trie::Create(): invalid key length\n");
-			return ERROR;
-		}
+        if (data_len_ == 0) {
+            fprintf(stderr, "Silt_SF_Ordered_Trie::Create(): invalid data length\n");
+            return ERROR;
+        }
 
-		if (data_len_ == 0) {
-			fprintf(stderr, "Silt_SF_Ordered_Trie::Create(): invalid data length\n");
-			return ERROR;
-		}
+        if (keys_per_block_ == 0) {
+            fprintf(stderr, "Silt_SF_Ordered_Trie::Create(): invalid keys per block\n");
+            return ERROR;
+        }
 
-		if (keys_per_block_ == 0) {
-			fprintf(stderr, "Silt_SF_Ordered_Trie::Create(): invalid keys per block\n");
-			return ERROR;
-		}
+        // the size can be zero
+        /*
+        if (size_ == 0) {
+        	DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): invalid size\n");
+        	return ERROR;
+        }
+        */
 
-		// the size can be zero
-		/*
-		if (size_ == 0) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): invalid size\n");
-			return ERROR;
-		}
-		*/
+        if (bucket_size_ == 0) {
+            fprintf(stderr, "Silt_SF_Ordered_Trie::Create(): invalid bucket size\n");
+            return ERROR;
+        }
 
-		if (bucket_size_ == 0) {
-			fprintf(stderr, "Silt_SF_Ordered_Trie::Create(): invalid bucket size\n");
-			return ERROR;
-		}
-
-		DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): creating index\n");
-
-		index_ = new index_type(key_len_, size_, bucket_size_, 0, keys_per_block_, skip_bits_);
-
-		DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): creating data store\n");
-
-		Configuration* storeConfig = new Configuration(config_, true);
-		storeConfig->SetContextNode("child::datastore");
-		storeConfig->SetStringValue("child::id", config_->GetStringValue("child::id"));
+        DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): creating index\n");
+        index_ = new index_type(key_len_, size_, bucket_size_, 0, keys_per_block_, skip_bits_);
+        DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): creating data store\n");
+        Configuration *storeConfig = new Configuration(config_, true);
+        storeConfig->SetContextNode("child::datastore");
+        storeConfig->SetStringValue("child::id", config_->GetStringValue("child::id"));
         char buf[1024];
         //snprintf(buf, sizeof(buf), "%zu", key_len_ + data_len_);
         snprintf(buf, sizeof(buf), "%zu", key_len_ + data_len_ + 4);    // HACK: alignment for 1020-byte entry
         storeConfig->SetStringValue("child::data-len", buf);
-		data_store_ = Silt_Factory::New(storeConfig);
-		if (data_store_ == NULL) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): could not create data store\n");
-			return ERROR;
-		}
+        data_store_ = Silt_Factory::New(storeConfig);
 
-		Silt_Return ret = data_store_->Create();
-		if (ret != OK)
-			return ret;
+        if (data_store_ == NULL) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): could not create data store\n");
+            return ERROR;
+        }
 
-		DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): <result> done\n");
+        Silt_Return ret = data_store_->Create();
 
-		return OK;
-	}
+        if (ret != OK)
+            return ret;
 
-	Silt_Return
-	Silt_SF_Ordered_Trie::Open()
-	{
-		// TODO: implement
-		return ERROR;
-	}
-
-	Silt_Return
-	Silt_SF_Ordered_Trie::Flush()
-	{
-		if (!index_)
-			return ERROR;
-
-		if (!index_->finalized())
-			index_->flush();
-		else {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Flush(): already finalized\n");
-		}
-
-		return OK;
-	}
-
-	Silt_Return
-	Silt_SF_Ordered_Trie::Close()
-	{
-		if (!index_)
-			return OK;
-
-		Flush();
-
-		delete index_;
-		index_ = NULL;
-		delete data_store_;
-		data_store_ = NULL;
-
-		return OK;
-	}
-
-	Silt_Return
-	Silt_SF_Ordered_Trie::Destroy()
-	{
-		Configuration* storeConfig = new Configuration(config_, true);
-		storeConfig->SetContextNode("child::datastore");
-		storeConfig->SetStringValue("child::id", config_->GetStringValue("child::id"));
-		Silt* data_store = Silt_Factory::New(storeConfig);
-		Silt_Return ret_destroy_data_store = data_store->Destroy();
-		delete data_store;
-
-		return ret_destroy_data_store;
-	}
-
-	Silt_Return
-	Silt_SF_Ordered_Trie::Status(const Silt_StatusType& type, Value& status) const
-	{
-		if (!index_)
-			return ERROR;
-
-		std::ostringstream oss;
-		switch (type) {
-		case NUM_DATA:
-			oss << actual_size_;
-			break;
-		case NUM_ACTIVE_DATA:
-			oss << actual_size_;
-			break;
-		case CAPACITY:
-			oss << size_;
-			break;
-		case MEMORY_USE:
-			oss << '[' << (index_->bit_size() + 7) / 8 << ",0]";
-			break;
-		case DISK_USE:
-			{
-				Value status_part;
-				if (data_store_->Status(type, status_part) != OK)
-					return UNSUPPORTED;
-				oss << "[0," << status_part.str() << ']';
-			}
-			break;
-		default:
-			return UNSUPPORTED;
-		}
-		status = NewValue(oss.str());
-		return OK;
-	}
-
-	Silt_Return
-	Silt_SF_Ordered_Trie::Put(const ConstValue& key, const ConstValue& data)
-	{
-#ifdef DEBUG
-    if (debug_level & 2) {
-        DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): key=\n");
-        print_payload((const u_char*)key.data(), key.size(), 4);
-        DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): data=\n");
-        print_payload((const u_char*)data.data(), data.size(), 4);
+        DPRINTF(2, "Silt_SF_Ordered_Trie::Create(): <result> done\n");
+        return OK;
     }
+
+    Silt_Return
+    Silt_SF_Ordered_Trie::Open()
+    {
+        // TODO: implement
+        return ERROR;
+    }
+
+    Silt_Return
+    Silt_SF_Ordered_Trie::Flush()
+    {
+        if (!index_)
+            return ERROR;
+
+        if (!index_->finalized())
+            index_->flush();
+        else {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Flush(): already finalized\n");
+        }
+
+        return OK;
+    }
+
+    Silt_Return
+    Silt_SF_Ordered_Trie::Close()
+    {
+        if (!index_)
+            return OK;
+
+        Flush();
+        delete index_;
+        index_ = NULL;
+        delete data_store_;
+        data_store_ = NULL;
+        return OK;
+    }
+
+    Silt_Return
+    Silt_SF_Ordered_Trie::Destroy()
+    {
+        Configuration *storeConfig = new Configuration(config_, true);
+        storeConfig->SetContextNode("child::datastore");
+        storeConfig->SetStringValue("child::id", config_->GetStringValue("child::id"));
+        Silt *data_store = Silt_Factory::New(storeConfig);
+        Silt_Return ret_destroy_data_store = data_store->Destroy();
+        delete data_store;
+        return ret_destroy_data_store;
+    }
+
+    Silt_Return
+    Silt_SF_Ordered_Trie::Status(const Silt_StatusType &type, Value &status) const
+    {
+        if (!index_)
+            return ERROR;
+
+        std::ostringstream oss;
+
+        switch (type) {
+            case NUM_DATA:
+                oss << actual_size_;
+                break;
+
+            case NUM_ACTIVE_DATA:
+                oss << actual_size_;
+                break;
+
+            case CAPACITY:
+                oss << size_;
+                break;
+
+            case MEMORY_USE:
+                oss << '[' << (index_->bit_size() + 7) / 8 << ",0]";
+                break;
+
+            case DISK_USE: {
+                Value status_part;
+
+                if (data_store_->Status(type, status_part) != OK)
+                    return UNSUPPORTED;
+
+                oss << "[0," << status_part.str() << ']';
+            }
+            break;
+
+            default:
+                return UNSUPPORTED;
+        }
+
+        status = NewValue(oss.str());
+        return OK;
+    }
+
+    Silt_Return
+    Silt_SF_Ordered_Trie::Put(const ConstValue &key, const ConstValue &data)
+    {
+#ifdef DEBUG
+
+        if (debug_level & 2) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): key=\n");
+            print_payload((const u_char *)key.data(), key.size(), 4);
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): data=\n");
+            print_payload((const u_char *)data.data(), data.size(), 4);
+        }
+
 #endif
 
-		if (!index_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> not initialized\n");
-			return ERROR;
-		}
+        if (!index_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> not initialized\n");
+            return ERROR;
+        }
 
-		if (index_->finalized()) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> already finalized\n");
-			return ERROR;
-		}
+        if (index_->finalized()) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> already finalized\n");
+            return ERROR;
+        }
 
-		if (key.size() != key_len_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> key length mismatch\n");
-			return INVALID_KEY;
-		}
-		if (data.size() != data_len_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> data length mismatch\n");
-			return INVALID_DATA;
-		}
+        if (key.size() != key_len_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> key length mismatch\n");
+            return INVALID_KEY;
+        }
 
-		if (!index_->insert(reinterpret_cast<const uint8_t*>(key.data()))) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> cannot insert key to index, probably non-sorted key\n");
-			return INVALID_KEY;
-		}
+        if (data.size() != data_len_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> data length mismatch\n");
+            return INVALID_DATA;
+        }
 
-		Value combined_kv;
-		//combined_kv.resize(key_len_ + data_len_);
-		combined_kv.resize(key_len_ + data_len_ + 4);   // HACK: alignment for 1020-byte entry
-		memcpy(combined_kv.data(), key.data(), key_len_);
-		memcpy(combined_kv.data() + key_len_, data.data(), data_len_);
+        if (!index_->insert(reinterpret_cast<const uint8_t *>(key.data()))) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> cannot insert key to index, probably non-sorted key\n");
+            return INVALID_KEY;
+        }
+
+        Value combined_kv;
+        //combined_kv.resize(key_len_ + data_len_);
+        combined_kv.resize(key_len_ + data_len_ + 4);   // HACK: alignment for 1020-byte entry
+        memcpy(combined_kv.data(), key.data(), key_len_);
+        memcpy(combined_kv.data() + key_len_, data.data(), data_len_);
         memset(combined_kv.data() + key_len_ + data_len_, 0, 4);   // HACK: alignment for 1020-byte entry
+        SizedValue<64> data_store_key;
+        data_store_->Append(data_store_key, combined_kv);
+        actual_size_++;
+        DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> put new key\n");
+        return OK;
+    }
 
-		SizedValue<64> data_store_key;
-		data_store_->Append(data_store_key, combined_kv);
+    Silt_Return
+    Silt_SF_Ordered_Trie::Contains(const ConstValue &key) const
+    {
+        if (!index_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Contains(): <result> not initialized\n");
+            return ERROR;
+        }
 
-		actual_size_++;
+        if (!index_->finalized()) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Contains(): <result> not finalized\n");
+            return ERROR;
+        }
 
-		DPRINTF(2, "Silt_SF_Ordered_Trie::Put(): <result> put new key\n");
-		return OK;
-	}
+        if (key.size() != key_len_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Contains(): <result> key length mismatch\n");
+            return INVALID_KEY;
+        }
 
-	Silt_Return
-	Silt_SF_Ordered_Trie::Contains(const ConstValue& key) const
-	{
-		if (!index_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Contains(): <result> not initialized\n");
-			return ERROR;
-		}
+        // TODO: better implementation
+        SizedValue<64> data;
+        Silt_Return ret_get = Get(key, data);
+        return ret_get;
+    }
 
-		if (!index_->finalized()) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Contains(): <result> not finalized\n");
-			return ERROR;
-		}
+    Silt_Return
+    Silt_SF_Ordered_Trie::Length(const ConstValue &key, size_t &len) const
+    {
+        if (!index_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Length(): <result> not initialized\n");
+            return ERROR;
+        }
 
-		if (key.size() != key_len_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Contains(): <result> key length mismatch\n");
-			return INVALID_KEY;
-		}
+        if (!index_->finalized()) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Length(): <result> not finalized\n");
+            return ERROR;
+        }
 
-		// TODO: better implementation
-		SizedValue<64> data;
-		Silt_Return ret_get = Get(key, data);
-		return ret_get;
-	}
+        if (key.size() != key_len_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Length(): <result> key length mismatch\n");
+            return INVALID_KEY;
+        }
 
-	Silt_Return
-	Silt_SF_Ordered_Trie::Length(const ConstValue& key, size_t& len) const
-	{
-		if (!index_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Length(): <result> not initialized\n");
-			return ERROR;
-		}
+        // TODO: better implementation
+        len = data_len_;
+        return Contains(key);
+    }
 
-		if (!index_->finalized()) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Length(): <result> not finalized\n");
-			return ERROR;
-		}
+    Silt_Return
+    Silt_SF_Ordered_Trie::Get(const ConstValue &key, Value &data, size_t offset, size_t len) const
+    {
+        if (!index_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> not initialized\n");
+            return ERROR;
+        }
 
-		if (key.size() != key_len_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Length(): <result> key length mismatch\n");
-			return INVALID_KEY;
-		}
+        if (!index_->finalized()) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> not finalized\n");
+            return ERROR;
+        }
 
-		// TODO: better implementation
-		len = data_len_;
-		return Contains(key);
-	}
+        if (key.size() == 0)
+            return INVALID_KEY;
 
-	Silt_Return
-	Silt_SF_Ordered_Trie::Get(const ConstValue& key, Value& data, size_t offset, size_t len) const
-	{
-		if (!index_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> not initialized\n");
-			return ERROR;
-		}
-
-		if (!index_->finalized()) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> not finalized\n");
-			return ERROR;
-		}
-
-		if (key.size() == 0)
-			return INVALID_KEY;
-
-		if (key.size() != key_len_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> key length mismatch\n");
-			return INVALID_KEY;
-		}
+        if (key.size() != key_len_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> key length mismatch\n");
+            return INVALID_KEY;
+        }
 
 #ifdef DEBUG
-		if (debug_level & 2) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): key=\n");
-			print_payload((const u_char*)key.data(), key.size(), 4);
-		}
+
+        if (debug_level & 2) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): key=\n");
+            print_payload((const u_char *)key.data(), key.size(), 4);
+        }
+
 #endif
+        size_t base_idx = index_->locate(reinterpret_cast<const uint8_t *>(key.data()));
+        base_idx = base_idx / keys_per_block_ * keys_per_block_;
 
-		size_t base_idx = index_->locate(reinterpret_cast<const uint8_t*>(key.data()));
-		base_idx = base_idx / keys_per_block_ * keys_per_block_;
+        for (size_t i = base_idx; i < base_idx + keys_per_block_; i++) {
+            size_t data_store_key = i;
+            SizedValue<64> ret_key;
+            Silt_Return ret_get = data_store_->Get(RefValue(&data_store_key), ret_key, 0, key_len_);
 
-		for (size_t i = base_idx; i < base_idx + keys_per_block_; i++) {
+            if (ret_get == END) {
+                DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got END, corrupted file store?\n");
+                break;
+            }
 
-			size_t data_store_key = i;
-			SizedValue<64> ret_key;
-
-			Silt_Return ret_get = data_store_->Get(RefValue(&data_store_key), ret_key, 0, key_len_);
-
-			if (ret_get == END) {
-				DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got END, corrupted file store?\n");
-				break;
-			}
-
-			if (ret_get != OK) {
-				DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got non-OK, corrupted file store?\n");
+            if (ret_get != OK) {
+                DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got non-OK, corrupted file store?\n");
                 //fprintf(stderr, "%zu error %zu\n", base_idx, ret_get);
-				return ret_get;
-			}
-			if (ret_key.size() != key_len_) {
-				DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got wrong key size, corrupted file store?\n");
-				return ERROR;
-			}
+                return ret_get;
+            }
 
-			if (key != ret_key) {
-				DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): key mismatch; continue\n");
-				continue;
-			}
+            if (ret_key.size() != key_len_) {
+                DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got wrong key size, corrupted file store?\n");
+                return ERROR;
+            }
 
-			if (offset > data_len_)
-				return END;
+            if (key != ret_key) {
+                DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): key mismatch; continue\n");
+                continue;
+            }
 
-			if (offset + len > data_len_)
-				len = data_len_ - offset;
+            if (offset > data_len_)
+                return END;
 
-			ret_get = data_store_->Get(RefValue(&data_store_key), data, key_len_, data_len_);
+            if (offset + len > data_len_)
+                len = data_len_ - offset;
 
-			if (ret_get != OK) {
+            ret_get = data_store_->Get(RefValue(&data_store_key), data, key_len_, data_len_);
+
+            if (ret_get != OK) {
                 //fprintf(stderr, "%zu error %zu\n", base_idx, ret_get);
-				DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got non-OK, corrupted file store?\n");
-				return ret_get;
-			}
-			if (data.size() != data_len_) {
-				DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got wrong data size, corrupted file store?\n");
-				return ERROR;
-			}
+                DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got non-OK, corrupted file store?\n");
+                return ret_get;
+            }
+
+            if (data.size() != data_len_) {
+                DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): got wrong data size, corrupted file store?\n");
+                return ERROR;
+            }
+
 #ifdef DEBUG
-			if (debug_level & 2) {
-				DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> data=\n");
-				print_payload((const u_char*)data.data(), data.size(), 4);
-			}
+
+            if (debug_level & 2) {
+                DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> data=\n");
+                print_payload((const u_char *)data.data(), data.size(), 4);
+            }
+
 #endif
             //fprintf(stderr, "%zu found\n", base_idx);
-			return OK;
-		}
+            return OK;
+        }
 
         //fprintf(stderr, "%zu not found\n", base_idx);
-		DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> cannot find key\n");
-		return KEY_NOT_FOUND;
-	}
+        DPRINTF(2, "Silt_SF_Ordered_Trie::Get(): <result> cannot find key\n");
+        return KEY_NOT_FOUND;
+    }
 
-	Silt_ConstIterator
-	Silt_SF_Ordered_Trie::Enumerate() const
-	{
-		if (!index_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Enumerate(): <result> not initialized\n");
-			return Silt_ConstIterator();
-		}
+    Silt_ConstIterator
+    Silt_SF_Ordered_Trie::Enumerate() const
+    {
+        if (!index_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Enumerate(): <result> not initialized\n");
+            return Silt_ConstIterator();
+        }
 
-		if (!index_->finalized()) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Enumerate(): <result> not finalized\n");
-			return Silt_ConstIterator();
-		}
+        if (!index_->finalized()) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Enumerate(): <result> not finalized\n");
+            return Silt_ConstIterator();
+        }
 
-		IteratorElem* elem = new IteratorElem(this);
-		elem->data_store_it = data_store_->Enumerate();
-		elem->Parse();
-		return Silt_ConstIterator(elem);
-	}
+        IteratorElem *elem = new IteratorElem(this);
+        elem->data_store_it = data_store_->Enumerate();
+        elem->Parse();
+        return Silt_ConstIterator(elem);
+    }
 
-	Silt_Iterator
-	Silt_SF_Ordered_Trie::Enumerate()
-	{
-		if (!index_) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Enumerate(): <result> not initialized\n");
-			return Silt_Iterator();
-		}
+    Silt_Iterator
+    Silt_SF_Ordered_Trie::Enumerate()
+    {
+        if (!index_) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Enumerate(): <result> not initialized\n");
+            return Silt_Iterator();
+        }
 
-		if (!index_->finalized()) {
-			DPRINTF(2, "Silt_SF_Ordered_Trie::Enumerate(): <result> not finalized\n");
-			return Silt_Iterator();
-		}
+        if (!index_->finalized()) {
+            DPRINTF(2, "Silt_SF_Ordered_Trie::Enumerate(): <result> not finalized\n");
+            return Silt_Iterator();
+        }
 
-		IteratorElem* elem = new IteratorElem(this);
-		elem->data_store_it = data_store_->Enumerate();
-		elem->Parse();
-		return Silt_Iterator(elem);
-	}
+        IteratorElem *elem = new IteratorElem(this);
+        elem->data_store_it = data_store_->Enumerate();
+        elem->Parse();
+        return Silt_Iterator(elem);
+    }
 
-	Silt_SF_Ordered_Trie::IteratorElem::IteratorElem(const Silt_SF_Ordered_Trie* silt)
-	{
-		this->silt = silt;
-	}
+    Silt_SF_Ordered_Trie::IteratorElem::IteratorElem(const Silt_SF_Ordered_Trie *silt)
+    {
+        this->silt = silt;
+    }
 
-	Silt_IteratorElem*
-	Silt_SF_Ordered_Trie::IteratorElem::Clone() const
-	{
-		IteratorElem* elem = new IteratorElem(static_cast<const Silt_SF_Ordered_Trie*>(silt));
-		*elem = *this;
-		return elem;
-	}
+    Silt_IteratorElem *
+    Silt_SF_Ordered_Trie::IteratorElem::Clone() const
+    {
+        IteratorElem *elem = new IteratorElem(static_cast<const Silt_SF_Ordered_Trie *>(silt));
+        *elem = *this;
+        return elem;
+    }
 
-	void
-	Silt_SF_Ordered_Trie::IteratorElem::Next()
-	{
-		++data_store_it;
+    void
+    Silt_SF_Ordered_Trie::IteratorElem::Next()
+    {
+        ++data_store_it;
+        Parse();
+    }
 
-		Parse();
-	}
+    void
+    Silt_SF_Ordered_Trie::IteratorElem::Parse()
+    {
+        if (data_store_it.IsOK()) {
+            state = OK;
+            const Silt_SF_Ordered_Trie *silt = static_cast<const Silt_SF_Ordered_Trie *>(this->silt);
+            Value &data_store_data = data_store_it->data;
+            key = NewValue(data_store_data.data(), silt->key_len_);
+            data = NewValue(data_store_data.data() + silt->key_len_, silt->data_len_);
+        } else if (data_store_it.IsEnd())
+            state = END;
+        else
+            state = ERROR;
+    }
 
-	void
-	Silt_SF_Ordered_Trie::IteratorElem::Parse()
-	{
-		if (data_store_it.IsOK()) {
-			state = OK;
-			const Silt_SF_Ordered_Trie* silt = static_cast<const Silt_SF_Ordered_Trie*>(this->silt);
-
-			Value& data_store_data = data_store_it->data;
-
-			key = NewValue(data_store_data.data(), silt->key_len_);
-			data = NewValue(data_store_data.data() + silt->key_len_, silt->data_len_);
-		}
-		else if (data_store_it.IsEnd())
-			state = END;
-		else
-			state = ERROR;
-	}
-
-	/*
+    /*
     template <typename BucketingType>
     void
     Silt_SF_Ordered_Trie<BucketingType>::LoadFromFile()
@@ -564,9 +563,9 @@ namespace silt
         initialized_ = true;
         fprintf(stdout, "Silt_SF_Ordered_Trie: LoadFromFile: loaded\n");
 
-#ifdef DEBUG
+    #ifdef DEBUG
         fprintf(stdout, "Silt_SF_Ordered_Trie: LoadFromFile: state: %lu\n", hash_state());
-#endif
+    #endif
     }
 
     template <typename BucketingType>
@@ -656,10 +655,10 @@ namespace silt
         close(fd);
         fprintf(stdout, "Silt_SF_Ordered_Trie: StoreToFile: stored\n");
 
-#ifdef DEBUG
+    #ifdef DEBUG
         fprintf(stdout, "Silt_SF_Ordered_Trie: StoreToFile: state: %lu\n", hash_state());
-#endif
+    #endif
     }
-	*/
+    */
 
 }  // namespace silt

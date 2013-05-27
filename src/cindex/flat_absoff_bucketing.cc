@@ -39,49 +39,74 @@
  * software in accordance with the terms specified in this license.
  */
 
-#pragma once
-
-#include "common.hpp"
-#include <vector>
-#include <boost/array.hpp>
+#include "flat_absoff_bucketing.h"
+#include <iostream>
 
 namespace cindex
 {
-	template<typename ValueType = uint16_t, typename UpperValueType = uint32_t>
-	class twolevel_absoff_bucketing
+	template<typename ValueType>
+	flat_absoff_bucketing<ValueType>::flat_absoff_bucketing(std::size_t size, std::size_t keys_per_bucket, std::size_t keys_per_block CINDEX_UNUSED)
 	{
-	public:
-		typedef ValueType value_type;
-		typedef UpperValueType upper_value_type;
+		resize(size, keys_per_bucket, keys_per_block);
+	}
 
-	public:
-		twolevel_absoff_bucketing(std::size_t size = 0, std::size_t keys_per_bucket = 1, std::size_t keys_per_block = 1);
+	template<typename ValueType>
+	void
+	flat_absoff_bucketing<ValueType>::resize(std::size_t size, std::size_t keys_per_bucket CINDEX_UNUSED, std::size_t keys_per_block CINDEX_UNUSED)
+	{
+		size_ = size;
 
-		void resize(std::size_t size, std::size_t keys_per_bucket, std::size_t keys_per_block);
+		bucket_info_.resize(size);
+		current_i_ = 0;
 
-		void insert(const std::size_t& index_offset, const std::size_t& dest_offset);
-		void finalize() {}
+		//if (size_)
+		//	std::cout << "bucket_count: " << size << std::endl;
+	}
 
-		std::size_t index_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
-		std::size_t dest_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
+	template<typename ValueType>
+	void
+	flat_absoff_bucketing<ValueType>::insert(const std::size_t& index_offset, const std::size_t& dest_offset)
+	{
+		assert(current_i_ < size_);
 
-		std::size_t size() const CINDEX_WARN_UNUSED_RESULT;
+		bucket_info_[current_i_][0] = guarded_cast<value_type>(index_offset);
+		bucket_info_[current_i_][1] = guarded_cast<value_type>(dest_offset);
 
-		std::size_t bit_size() const CINDEX_WARN_UNUSED_RESULT;
+		assert(this->index_offset(current_i_) == index_offset);
+		assert(this->dest_offset(current_i_) == dest_offset);
 
-	protected:
-		std::size_t upper_index_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
-		std::size_t upper_dest_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
+		current_i_++;
+	}
 
-	private:
-		std::size_t size_;
-		std::size_t keys_per_bucket_;
+	template<typename ValueType>
+	std::size_t
+	flat_absoff_bucketing<ValueType>::index_offset(std::size_t i) const
+	{
+		assert(i < size_);
+		return bucket_info_[i][0];
+	}
 
-		std::size_t upper_bucket_size_;
+	template<typename ValueType>
+	std::size_t
+	flat_absoff_bucketing<ValueType>::dest_offset(std::size_t i) const
+	{
+		assert(i < size_);
+		return bucket_info_[i][1];
+	}
 
-		std::vector<boost::array<value_type, 2> > bucket_info_;
-		std::vector<boost::array<upper_value_type, 2> > upper_bucket_info_;
+	template<typename ValueType>
+	std::size_t
+	flat_absoff_bucketing<ValueType>::size() const
+	{
+		return size_;
+	}
 
-		std::size_t current_i_;
-	};
+	template<typename ValueType>
+	std::size_t
+	flat_absoff_bucketing<ValueType>::bit_size() const
+	{
+		return bucket_info_.size() * 2 * sizeof(value_type) * 8;
+	}
+
+	template class flat_absoff_bucketing<>;
 }

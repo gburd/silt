@@ -39,8 +39,8 @@
  * software in accordance with the terms specified in this license.
  */
 
-#include "semi_direct_16_reloff_bucketing.hpp"
-#include "expected_size.hpp"
+#include "semi_direct_16_reloff_bucketing.h"
+#include "expected_size.h"
 #include <cstring>
 #include <iostream>
 

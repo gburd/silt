@@ -57,184 +57,188 @@
 using namespace std;
 namespace silt {
 
-class Configuration;
+    class Configuration;
 
-// configuration
-//   <type>: "cuckoo" (fixed)
-//   <id>: the ID of the file store
-//   <file>: the file name prefix to store the hash table for startup
-//   <hash-table-size>: the number of entries that the hash table is expected to hold
-//   <use-offset>: 1 (default): use an explicit offset field of 4 bytes
-//                 0: do not use offsets; a location in the hash table becomes an offset
+    // configuration
+    //   <type>: "cuckoo" (fixed)
+    //   <id>: the ID of the file store
+    //   <file>: the file name prefix to store the hash table for startup
+    //   <hash-table-size>: the number of entries that the hash table is expected to hold
+    //   <use-offset>: 1 (default): use an explicit offset field of 4 bytes
+    //                 0: do not use offsets; a location in the hash table becomes an offset
 
-class HashTableCuckoo : public Silt {
-    /*
-     * parameters for cuckoo
-     */
-    static const uint32_t NUMHASH = 2;
-    static const uint32_t ASSOCIATIVITY = 4;
+    class HashTableCuckoo : public Silt {
+            /*
+             * parameters for cuckoo
+             */
+            static const uint32_t NUMHASH = 2;
+            static const uint32_t ASSOCIATIVITY = 4;
 
-    static const uint32_t NUMVICTIM = 2; // size of victim table
-    static const uint32_t MAX_CUCKOO_COUNT = 128;
-    static const uint32_t KEYFRAGBITS = 15; // KEYFRAGBITS + VALIDBITS must be <= 16
-    static const uint16_t KEYFRAGMASK = (1 << KEYFRAGBITS) - 1;
-    static const uint16_t VALIDBITMASK = KEYFRAGMASK + 1;
-    static const uint16_t KEYPRESENTMASK =  VALIDBITMASK | KEYFRAGMASK;
+            static const uint32_t NUMVICTIM = 2; // size of victim table
+            static const uint32_t MAX_CUCKOO_COUNT = 128;
+            static const uint32_t KEYFRAGBITS = 15; // KEYFRAGBITS + VALIDBITS must be <= 16
+            static const uint16_t KEYFRAGMASK = (1 << KEYFRAGBITS) - 1;
+            static const uint16_t VALIDBITMASK = KEYFRAGMASK + 1;
+            static const uint16_t KEYPRESENTMASK =  VALIDBITMASK | KEYFRAGMASK;
 
-protected:
-    struct TagValStoreEntry {
-        uint8_t  tag_vector[ASSOCIATIVITY * ( KEYFRAGBITS + 1) / 8];
-        uint32_t val_vector[ASSOCIATIVITY];
-    } __attribute__((__packed__));
+        protected:
+            struct TagValStoreEntry {
+                uint8_t  tag_vector[ASSOCIATIVITY * (KEYFRAGBITS + 1) / 8];
+                uint32_t val_vector[ASSOCIATIVITY];
+            } __attribute__((__packed__));
 
-    struct TagStoreEntry {
-        uint8_t  tag_vector[ASSOCIATIVITY * ( KEYFRAGBITS + 1) / 8];
-    } __attribute__((__packed__));
+            struct TagStoreEntry {
+                uint8_t  tag_vector[ASSOCIATIVITY * (KEYFRAGBITS + 1) / 8];
+            } __attribute__((__packed__));
 
-public:
-    HashTableCuckoo();
-    virtual ~HashTableCuckoo();
+        public:
+            HashTableCuckoo();
+            virtual ~HashTableCuckoo();
 
-    virtual Silt_Return Create();
-    virtual Silt_Return Open();
+            virtual Silt_Return Create();
+            virtual Silt_Return Open();
 
-    virtual Silt_Return Flush();
-    virtual Silt_Return Close();
+            virtual Silt_Return Flush();
+            virtual Silt_Return Close();
 
-    virtual Silt_Return Destroy();
+            virtual Silt_Return Destroy();
 
-    virtual Silt_Return Status(const Silt_StatusType& type, Value& status) const;
+            virtual Silt_Return Status(const Silt_StatusType &type, Value &status) const;
 
-    virtual Silt_Return Put(const ConstValue& key, const ConstValue& data);
+            virtual Silt_Return Put(const ConstValue &key, const ConstValue &data);
 
-    virtual Silt_Return ConvertTo(Silt* new_store) const;
+            virtual Silt_Return ConvertTo(Silt *new_store) const;
 
 
-    // not supported by now.
-    // virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
-    //virtual Silt_Return Append(Value& key, const ConstValue& data);
-    //virtual Silt_Return Delete(const ConstValue& key);
-    //virtual Silt_Return Contains(const ConstValue& key) const;
-    //virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
+            // not supported by now.
+            // virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
+            //virtual Silt_Return Append(Value& key, const ConstValue& data);
+            //virtual Silt_Return Delete(const ConstValue& key);
+            //virtual Silt_Return Contains(const ConstValue& key) const;
+            //virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
 
-    virtual Silt_ConstIterator Enumerate() const;
-    virtual Silt_Iterator Enumerate();
+            virtual Silt_ConstIterator Enumerate() const;
+            virtual Silt_Iterator Enumerate();
 
-    virtual Silt_ConstIterator Find(const ConstValue& key) const;
-    virtual Silt_Iterator Find(const ConstValue& key);
+            virtual Silt_ConstIterator Find(const ConstValue &key) const;
+            virtual Silt_Iterator Find(const ConstValue &key);
 
-    struct IteratorElem : public Silt_IteratorElem {
-        Silt_IteratorElem* Clone() const;
-        void Next();
-        Silt_Return Replace(const ConstValue& data);
-        uint32_t keyfrag[NUMHASH];
-        uint32_t current_keyfrag_id;
-        uint32_t current_index;
-        uint32_t current_way;
-    };
+            struct IteratorElem : public Silt_IteratorElem {
+                Silt_IteratorElem *Clone() const;
+                void Next();
+                Silt_Return Replace(const ConstValue &data);
+                uint32_t keyfrag[NUMHASH];
+                uint32_t current_keyfrag_id;
+                uint32_t current_index;
+                uint32_t current_way;
+            };
 
-protected:
-    int WriteToFile();
-    int ReadFromFile();
+        protected:
+            int WriteToFile();
+            int ReadFromFile();
 
-private:
-    TagValStoreEntry* hash_table_;
-    TagStoreEntry*    fpf_table_;
+        private:
+            TagValStoreEntry *hash_table_;
+            TagStoreEntry    *fpf_table_;
 
-    uint32_t  max_index_;
-    uint32_t  max_entries_;
-    uint32_t  current_entries_;
+            uint32_t  max_index_;
+            uint32_t  max_entries_;
+            uint32_t  current_entries_;
 
-    inline bool valid(uint32_t index, uint32_t way) const {
-        uint32_t pos = way * (KEYFRAGBITS + 1);
-        uint32_t offset = pos >> 3;
-        uint16_t tmp = 0;
+            inline bool valid(uint32_t index, uint32_t way) const {
+                uint32_t pos = way * (KEYFRAGBITS + 1);
+                uint32_t offset = pos >> 3;
+                uint16_t tmp = 0;
+                assert(KEYFRAGBITS == 15);
 
-        assert(KEYFRAGBITS == 15);
-        if (hash_table_) {
-            uint16_t *p= (uint16_t *) (hash_table_[index].tag_vector + offset);
-            tmp = *p;
-        } else {
-            uint16_t *p= (uint16_t *) (fpf_table_[index].tag_vector + offset);
-            tmp = *p;
-        }
-        return (tmp & VALIDBITMASK);
-    }
+                if (hash_table_) {
+                    uint16_t *p = (uint16_t *)(hash_table_[index].tag_vector + offset);
+                    tmp = *p;
+                } else {
+                    uint16_t *p = (uint16_t *)(fpf_table_[index].tag_vector + offset);
+                    tmp = *p;
+                }
 
-    // read from tagvector in the hashtable
-    inline uint32_t tag(uint32_t index, uint32_t way) const {
-        uint32_t pos = way * (KEYFRAGBITS + 1);
-        uint32_t offset = pos >> 3;
-        uint16_t tmp = 0;
+                return (tmp & VALIDBITMASK);
+            }
 
-        assert(KEYFRAGBITS == 15);
-        if (hash_table_) {
-            uint16_t *p= (uint16_t *) (hash_table_[index].tag_vector + offset);
-            tmp = *p;
-        } else {
-            uint16_t *p= (uint16_t *) (fpf_table_[index].tag_vector + offset);
-            tmp = *p;
-        }
-        return (tmp & KEYFRAGMASK);
-    }
+            // read from tagvector in the hashtable
+            inline uint32_t tag(uint32_t index, uint32_t way) const {
+                uint32_t pos = way * (KEYFRAGBITS + 1);
+                uint32_t offset = pos >> 3;
+                uint16_t tmp = 0;
+                assert(KEYFRAGBITS == 15);
 
-    inline uint32_t val(uint32_t index, uint32_t way) const {
-        if (hash_table_)
-            return hash_table_[index].val_vector[way];
-        else
-            return index * ASSOCIATIVITY + way;
-    }
+                if (hash_table_) {
+                    uint16_t *p = (uint16_t *)(hash_table_[index].tag_vector + offset);
+                    tmp = *p;
+                } else {
+                    uint16_t *p = (uint16_t *)(fpf_table_[index].tag_vector + offset);
+                    tmp = *p;
+                }
 
-    // store keyfrag + validbit to  tagvector in the hashtable
-    void store(uint32_t index, uint32_t way, uint32_t keypresent, uint32_t id) {
-        assert(hash_table_);
-        assert(way < ASSOCIATIVITY);
-        uint32_t pos = way * (KEYFRAGBITS + 1);
-        uint32_t offset = pos >> 3;
-        uint32_t shift = pos & 7;
+                return (tmp & KEYFRAGMASK);
+            }
 
-        // specialized code
-        assert(KEYFRAGBITS == 15);
-        uint16_t *p= (uint16_t *) (hash_table_[index].tag_vector + offset);
-        uint16_t tmp = *p;
-        tmp &= ~(KEYPRESENTMASK << shift);
-        *p = tmp | (keypresent << shift);
-        hash_table_[index].val_vector[way] = id;
-    }
+            inline uint32_t val(uint32_t index, uint32_t way) const {
+                if (hash_table_)
+                    return hash_table_[index].val_vector[way];
+                else
+                    return index * ASSOCIATIVITY + way;
+            }
 
-    /* read the keyfragment from the key */
-    inline uint32_t keyfrag(const ConstValue& key, uint32_t keyfrag_id) const {
-        assert(key.size() >= sizeof(uint32_t));
-        // take the last 4 bytes
-        uint32_t tmp = *((uint32_t *) (key.data() + key.size() - 4));
-        tmp = (tmp >> (keyfrag_id * KEYFRAGBITS)) & KEYFRAGMASK;
+            // store keyfrag + validbit to  tagvector in the hashtable
+            void store(uint32_t index, uint32_t way, uint32_t keypresent, uint32_t id) {
+                assert(hash_table_);
+                assert(way < ASSOCIATIVITY);
+                uint32_t pos = way * (KEYFRAGBITS + 1);
+                uint32_t offset = pos >> 3;
+                uint32_t shift = pos & 7;
+                // specialized code
+                assert(KEYFRAGBITS == 15);
+                uint16_t *p = (uint16_t *)(hash_table_[index].tag_vector + offset);
+                uint16_t tmp = *p;
+                tmp &= ~(KEYPRESENTMASK << shift);
+                *p = tmp | (keypresent << shift);
+                hash_table_[index].val_vector[way] = id;
+            }
 
+            /* read the keyfragment from the key */
+            inline uint32_t keyfrag(const ConstValue &key, uint32_t keyfrag_id) const {
+                assert(key.size() >= sizeof(uint32_t));
+                // take the last 4 bytes
+                uint32_t tmp = *((uint32_t *)(key.data() + key.size() - 4));
+                tmp = (tmp >> (keyfrag_id * KEYFRAGBITS)) & KEYFRAGMASK;
 #ifdef DEBUG
-        // DPRINTF(2, "\t\t    key=\t");
-        // print_payload((const u_char*) key.data(), key.size(), 4);
-        // DPRINTF(2, "\t\t%dth tag=\t", keyfrag_index);
-        // print_payload((const u_char*) &tmp, 2, 4);
+                // DPRINTF(2, "\t\t    key=\t");
+                // print_payload((const u_char*) key.data(), key.size(), 4);
+                // DPRINTF(2, "\t\t%dth tag=\t", keyfrag_index);
+                // print_payload((const u_char*) &tmp, 2, 4);
 #endif
-        return tmp;
-    }
+                return tmp;
+            }
 
 
-    /* check if the given row has a free slot, return its way */
-    uint32_t freeslot(uint32_t index)  {
-        uint32_t way;
-        for (way = 0; way < ASSOCIATIVITY; way++) {
-            DPRINTF(4, "check ... (%d, %d)\t", index, way);
-            if (!valid(index, way)) {
-                DPRINTF(4, "not used!\n");
+            /* check if the given row has a free slot, return its way */
+            uint32_t freeslot(uint32_t index)  {
+                uint32_t way;
+
+                for (way = 0; way < ASSOCIATIVITY; way++) {
+                    DPRINTF(4, "check ... (%d, %d)\t", index, way);
+
+                    if (!valid(index, way)) {
+                        DPRINTF(4, "not used!\n");
+                        return way;
+                    }
+
+                    DPRINTF(4, "used...\n");
+                }
+
                 return way;
             }
-            DPRINTF(4, "used...\n");
-        }
-        return way;
-    }
 
-    friend struct IteratorElem;
-};
+            friend struct IteratorElem;
+    };
 
 } // namespace silt
 

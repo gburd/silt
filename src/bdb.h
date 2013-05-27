@@ -57,55 +57,55 @@ namespace silt {
     //   <file>: the file name prefix of Berkeley Database
 
     class BDB : public Silt {
-    public:
-        BDB();
-        virtual ~BDB();
+        public:
+            BDB();
+            virtual ~BDB();
 
-        virtual Silt_Return Create();
-        virtual Silt_Return Open();
+            virtual Silt_Return Create();
+            virtual Silt_Return Open();
 
-        virtual Silt_Return ConvertTo(Silt* new_store) const;
+            virtual Silt_Return ConvertTo(Silt *new_store) const;
 
-        virtual Silt_Return Flush();
-        virtual Silt_Return Close();
+            virtual Silt_Return Flush();
+            virtual Silt_Return Close();
 
-        virtual Silt_Return Destroy();
+            virtual Silt_Return Destroy();
 
-        virtual Silt_Return Status(const Silt_StatusType& type, Value& status) const;
+            virtual Silt_Return Status(const Silt_StatusType &type, Value &status) const;
 
-        virtual Silt_Return Put(const ConstValue& key, const ConstValue& data);
-        // TODO: virtual Silt_Return Append(Value& key, const ConstValue& data);
+            virtual Silt_Return Put(const ConstValue &key, const ConstValue &data);
+            // TODO: virtual Silt_Return Append(Value& key, const ConstValue& data);
 
-        virtual Silt_Return Delete(const ConstValue& key);
+            virtual Silt_Return Delete(const ConstValue &key);
 
-        virtual Silt_Return Contains(const ConstValue& key) const;
-        virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
-        virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
+            virtual Silt_Return Contains(const ConstValue &key) const;
+            virtual Silt_Return Length(const ConstValue &key, size_t &len) const;
+            virtual Silt_Return Get(const ConstValue &key, Value &data, size_t offset = 0, size_t len = -1) const;
 
-        virtual Silt_ConstIterator Enumerate() const;
-        virtual Silt_Iterator Enumerate();
+            virtual Silt_ConstIterator Enumerate() const;
+            virtual Silt_Iterator Enumerate();
 
-        virtual Silt_ConstIterator Find(const ConstValue& key) const;
-        virtual Silt_Iterator Find(const ConstValue& key);
+            virtual Silt_ConstIterator Find(const ConstValue &key) const;
+            virtual Silt_Iterator Find(const ConstValue &key);
 
-        struct IteratorElem : public Silt_IteratorElem {
-            IteratorElem(const BDB* silt);
-            ~IteratorElem();
+            struct IteratorElem : public Silt_IteratorElem {
+                IteratorElem(const BDB *silt);
+                ~IteratorElem();
 
-            Silt_IteratorElem* Clone() const;
-            void Next();
+                Silt_IteratorElem *Clone() const;
+                void Next();
 
-            void Increment(bool initial);
+                void Increment(bool initial);
 
-            DBC* cursor;
-        };
+                DBC *cursor;
+            };
 
-    private:
-        DB* dbp_;
+        private:
+            DB *dbp_;
 
-        tbb::atomic<size_t> size_;
+            tbb::atomic<size_t> size_;
 
-        friend struct IteratorElem;
+            friend struct IteratorElem;
     };
 
 }  // namespace silt

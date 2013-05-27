@@ -52,14 +52,14 @@
 #include <bits/syscall.h>
 
 extern "C" {
-pid_t gettid()
-{
-    return (pid_t)syscall(SYS_gettid);
-}
+    pid_t gettid()
+    {
+        return (pid_t)syscall(SYS_gettid);
+    }
 }
 
 extern "C" {
-// from linux/ioprio.h
+    // from linux/ioprio.h
 
 #define IOPRIO_BITS             (16)
 #define IOPRIO_CLASS_SHIFT      (13)
@@ -71,28 +71,28 @@ extern "C" {
 
 #define ioprio_valid(mask)      (IOPRIO_PRIO_CLASS((mask)) != IOPRIO_CLASS_NONE)
 
-enum {
-    IOPRIO_CLASS_NONE,
-    IOPRIO_CLASS_RT,
-    IOPRIO_CLASS_BE,
-    IOPRIO_CLASS_IDLE,
-};
+    enum {
+        IOPRIO_CLASS_NONE,
+        IOPRIO_CLASS_RT,
+        IOPRIO_CLASS_BE,
+        IOPRIO_CLASS_IDLE,
+    };
 
-enum {
-    IOPRIO_WHO_PROCESS = 1,
-    IOPRIO_WHO_PGRP,
-    IOPRIO_WHO_USER,
-};
+    enum {
+        IOPRIO_WHO_PROCESS = 1,
+        IOPRIO_WHO_PGRP,
+        IOPRIO_WHO_USER,
+    };
 
-static inline int ioprio_set(int which, int who, int ioprio)
-{
-    return syscall(__NR_ioprio_set, which, who, ioprio);
-}
+    static inline int ioprio_set(int which, int who, int ioprio)
+    {
+        return syscall(__NR_ioprio_set, which, who, ioprio);
+    }
 
-static inline int ioprio_get(int which, int who)
-{
-    return syscall(__NR_ioprio_get, which, who);
-}
+    static inline int ioprio_get(int which, int who)
+    {
+        return syscall(__NR_ioprio_get, which, who);
+    }
 
 }
 #endif
@@ -103,11 +103,10 @@ namespace silt {
         : cpu_priority_(cpu_priority), io_priority_(io_priority)
     {
         assert(num_workers > 0);
-
         shared_queue_.set_capacity(queue_capacity);
 
         for (size_t i = 0; i < num_workers; i++) {
-            Worker* worker = new Worker();
+            Worker *worker = new Worker();
             worker->owner = this;
             worker->seen_join = false;
             worker->queue = &shared_queue_;
@@ -131,7 +130,7 @@ namespace silt {
     }
 
     void
-    TaskScheduler::enqueue_task(Task* t)
+    TaskScheduler::enqueue_task(Task *t)
     {
         //workers_[next_worker_++ % workers_.size()]->queue.push(t);
         shared_queue_.push(t);
@@ -141,7 +140,7 @@ namespace silt {
     TaskScheduler::join()
     {
         for (size_t i = 0; i < workers_.size(); i++) {
-            JoinTask* t = new JoinTask();
+            JoinTask *t = new JoinTask();
             //workers_[i]->queue.push(t);
             shared_queue_.push(t);
         }
@@ -155,14 +154,12 @@ namespace silt {
         workers_.clear();
     }
 
-    void*
-    TaskScheduler::Worker::thread_main(void* arg)
+    void *
+    TaskScheduler::Worker::thread_main(void *arg)
     {
-        Worker* this_worker = reinterpret_cast<Worker*>(arg);
-
+        Worker *this_worker = reinterpret_cast<Worker *>(arg);
 #ifdef __linux__
         pid_t tid = gettid();
-
         {
             if (this_worker->owner->cpu_priority_ == CPU_LOW) {
                 nice(1);
@@ -170,45 +167,50 @@ namespace silt {
                 //fprintf(stderr, "set nice() = %d\n", new_nice);
             }
         }
-
         {
             // from Documentation/block/ioprio.txt
             unsigned int ioprio = 4;
             int ioprio_class = IOPRIO_CLASS_BE;
 
             switch (this_worker->owner->io_priority_) {
-            case IO_REAL_TIME:
-                ioprio_class = IOPRIO_CLASS_RT;
-                break;
-            case IO_BEST_EFFORT:
-                ioprio_class = IOPRIO_CLASS_BE;
-                break;
-            case IO_IDLE:
-                ioprio_class = IOPRIO_CLASS_IDLE;
-                ioprio = 7;
-                break;
-            default:
-                assert(false);
-                break;
+                case IO_REAL_TIME:
+                    ioprio_class = IOPRIO_CLASS_RT;
+                    break;
+
+                case IO_BEST_EFFORT:
+                    ioprio_class = IOPRIO_CLASS_BE;
+                    break;
+
+                case IO_IDLE:
+                    ioprio_class = IOPRIO_CLASS_IDLE;
+                    ioprio = 7;
+                    break;
+
+                default:
+                    assert(false);
+                    break;
             }
 
             int ret = ioprio_set(IOPRIO_WHO_PROCESS, tid, IOPRIO_PRIO_VALUE(ioprio_class, ioprio));
+
             if (ret) {
                 perror("Error while setting I/O priority");
                 assert(false);
             }
+
             assert(IOPRIO_PRIO_CLASS(ioprio_get(IOPRIO_WHO_PROCESS, tid)) == ioprio_class);
             assert(IOPRIO_PRIO_DATA(ioprio_get(IOPRIO_WHO_PROCESS, tid)) == ioprio);
         }
 #endif
 
         while (!this_worker->seen_join) {
-            Task* t;
+            Task *t;
             this_worker->queue->pop(t);
             t->seen_join = &this_worker->seen_join;
             t->Run();
             delete t;
         }
+
         return NULL;
     }
 

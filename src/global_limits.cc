@@ -49,7 +49,7 @@ namespace silt {
 
     GlobalLimits::GlobalLimits()
         : convert_rate_limiter_(0, 1000000000L, 1, 1),
-        merge_rate_limiter_(0, 1000000000L, 1, 1)
+          merge_rate_limiter_(0, 1000000000L, 1, 1)
     {
         disabled_ = 0;
         set_convert_rate(1000000000L);

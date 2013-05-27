@@ -60,109 +60,109 @@ namespace silt {
     //   <use-buffered-io-only>: with a non-zero value, use buffered I/O only and do not use direct I/O.  Default is 0 (false).  Useful for quick tests or data-len >= 4096 (direct I/O is less likely to improve read performance).
 
     class FileStore : public Silt {
-    public:
-        FileStore();
-        virtual ~FileStore();
-
-        virtual Silt_Return Create();
-        virtual Silt_Return Open();
-
-        virtual Silt_Return ConvertTo(Silt* new_store) const;
-
-        virtual Silt_Return Flush();
-        virtual Silt_Return Close();
-
-        virtual Silt_Return Destroy();
-
-        virtual Silt_Return Status(const Silt_StatusType& type, Value& status) const;
-
-        virtual Silt_Return Put(const ConstValue& key, const ConstValue& data);
-        virtual Silt_Return Append(Value& key, const ConstValue& data);
-
-        //virtual Silt_Return Delete(const ConstValue& key);
-
-        virtual Silt_Return Contains(const ConstValue& key) const;
-        virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
-        virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
-
-        virtual Silt_ConstIterator Enumerate() const;
-        virtual Silt_Iterator Enumerate();
-
-        virtual Silt_ConstIterator Find(const ConstValue& key) const;
-        virtual Silt_Iterator Find(const ConstValue& key);
-
-        struct IteratorElem : public Silt_IteratorElem {
-            Silt_IteratorElem* Clone() const;
-            void Next();
-
-            off_t next_id;
-        };
-
-    protected:
-        typedef uint32_t entry_length_t;
-
-        Silt_Return length(const ConstValue& key, size_t& len, bool readahead) const;
-        Silt_Return get(const ConstValue& key, Value& data, size_t offset, size_t len, bool readahead) const;
-
-        //int disable_readahead();
-
-        // I/O layer (TODO: make this as a separate class)
-        void int_initialize();
-        void int_terminate();
-
-        bool int_open(const char* pathname, int flags, mode_t mode);
-        bool int_is_open() const;
-        bool int_close();
-        static bool int_unlink(const char* pathname);
-
-        bool int_pread(char* buf, size_t& count, off_t offset, bool readahead) const;
-        bool int_pwritev(const struct iovec* iov, int count, off_t offset);
-        bool int_sync(bool blocking);
-
-    private:
-        size_t data_len_;
-
-        tbb::atomic<off_t> next_append_id_;
-        off_t end_id_;
-        tbb::atomic<off_t> next_sync_;
-
-        bool use_buffered_io_only_;
-
-        // I/O layer (TODO: make this as a separate class)
-        static const size_t chunk_size_ = 1048576;
-        static const size_t page_size_ = 512;
-        static const size_t page_size_mask_ = page_size_ - 1;
-        static const size_t cache_size_ = 128;
-
-        int fd_buffered_sequential_;
-        int fd_buffered_random_;
-        int fd_direct_random_;
-
-        mutable tbb::queuing_mutex sync_mutex_;
-        mutable tbb::queuing_rw_mutex dirty_chunk_mutex_;
-        boost::dynamic_bitset<> dirty_chunk_;
-        boost::dynamic_bitset<> syncing_chunk_;
-
-        struct cache_entry {
-            bool valid;
-            off_t offset;
-            char data[page_size_];
-        };
-        mutable tbb::queuing_rw_mutex cache_mutex_;
-        mutable cache_entry cache_[cache_size_];
-        mutable tbb::atomic<size_t> cache_hit_;
-        mutable tbb::atomic<size_t> cache_miss_;
-
-        class SyncTask : public Task {
         public:
-            virtual ~SyncTask();
-            virtual void Run();
-            FileStore* file_store;
-            tbb::queuing_mutex::scoped_lock* sync_lock;
-        };
-        static TaskScheduler task_scheduler_sync_;
+            FileStore();
+            virtual ~FileStore();
 
-        friend class SyncTask;
+            virtual Silt_Return Create();
+            virtual Silt_Return Open();
+
+            virtual Silt_Return ConvertTo(Silt *new_store) const;
+
+            virtual Silt_Return Flush();
+            virtual Silt_Return Close();
+
+            virtual Silt_Return Destroy();
+
+            virtual Silt_Return Status(const Silt_StatusType &type, Value &status) const;
+
+            virtual Silt_Return Put(const ConstValue &key, const ConstValue &data);
+            virtual Silt_Return Append(Value &key, const ConstValue &data);
+
+            //virtual Silt_Return Delete(const ConstValue& key);
+
+            virtual Silt_Return Contains(const ConstValue &key) const;
+            virtual Silt_Return Length(const ConstValue &key, size_t &len) const;
+            virtual Silt_Return Get(const ConstValue &key, Value &data, size_t offset = 0, size_t len = -1) const;
+
+            virtual Silt_ConstIterator Enumerate() const;
+            virtual Silt_Iterator Enumerate();
+
+            virtual Silt_ConstIterator Find(const ConstValue &key) const;
+            virtual Silt_Iterator Find(const ConstValue &key);
+
+            struct IteratorElem : public Silt_IteratorElem {
+                Silt_IteratorElem *Clone() const;
+                void Next();
+
+                off_t next_id;
+            };
+
+        protected:
+            typedef uint32_t entry_length_t;
+
+            Silt_Return length(const ConstValue &key, size_t &len, bool readahead) const;
+            Silt_Return get(const ConstValue &key, Value &data, size_t offset, size_t len, bool readahead) const;
+
+            //int disable_readahead();
+
+            // I/O layer (TODO: make this as a separate class)
+            void int_initialize();
+            void int_terminate();
+
+            bool int_open(const char *pathname, int flags, mode_t mode);
+            bool int_is_open() const;
+            bool int_close();
+            static bool int_unlink(const char *pathname);
+
+            bool int_pread(char *buf, size_t &count, off_t offset, bool readahead) const;
+            bool int_pwritev(const struct iovec *iov, int count, off_t offset);
+            bool int_sync(bool blocking);
+
+        private:
+            size_t data_len_;
+
+            tbb::atomic<off_t> next_append_id_;
+            off_t end_id_;
+            tbb::atomic<off_t> next_sync_;
+
+            bool use_buffered_io_only_;
+
+            // I/O layer (TODO: make this as a separate class)
+            static const size_t chunk_size_ = 1048576;
+            static const size_t page_size_ = 512;
+            static const size_t page_size_mask_ = page_size_ - 1;
+            static const size_t cache_size_ = 128;
+
+            int fd_buffered_sequential_;
+            int fd_buffered_random_;
+            int fd_direct_random_;
+
+            mutable tbb::queuing_mutex sync_mutex_;
+            mutable tbb::queuing_rw_mutex dirty_chunk_mutex_;
+            boost::dynamic_bitset<> dirty_chunk_;
+            boost::dynamic_bitset<> syncing_chunk_;
+
+            struct cache_entry {
+                bool valid;
+                off_t offset;
+                char data[page_size_];
+            };
+            mutable tbb::queuing_rw_mutex cache_mutex_;
+            mutable cache_entry cache_[cache_size_];
+            mutable tbb::atomic<size_t> cache_hit_;
+            mutable tbb::atomic<size_t> cache_miss_;
+
+            class SyncTask : public Task {
+                public:
+                    virtual ~SyncTask();
+                    virtual void Run();
+                    FileStore *file_store;
+                    tbb::queuing_mutex::scoped_lock *sync_lock;
+            };
+            static TaskScheduler task_scheduler_sync_;
+
+            friend class SyncTask;
     };
 
 } // namespace silt

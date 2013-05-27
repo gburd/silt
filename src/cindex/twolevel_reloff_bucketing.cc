@@ -39,8 +39,8 @@
  * software in accordance with the terms specified in this license.
  */
 
-#include "twolevel_reloff_bucketing.hpp"
-#include "expected_size.hpp"
+#include "twolevel_reloff_bucketing.h"
+#include "expected_size.h"
 #include <iostream>
 #include <gsl/gsl_cdf.h>
 

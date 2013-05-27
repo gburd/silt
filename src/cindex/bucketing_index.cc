@@ -39,15 +39,15 @@
  * software in accordance with the terms specified in this license.
  */
 
-#include "bucketing_index.hpp"
+#include "bucketing_index.h"
 #include <iostream>
 
 // for template instantiation
-#include "flat_absoff_bucketing.hpp"
-#include "twolevel_absoff_bucketing.hpp"
-#include "twolevel_reloff_bucketing.hpp"
-#include "semi_direct_16_absoff_bucketing.hpp"
-#include "semi_direct_16_reloff_bucketing.hpp"
+#include "flat_absoff_bucketing.h"
+#include "twolevel_absoff_bucketing.h"
+#include "twolevel_reloff_bucketing.h"
+#include "semi_direct_16_absoff_bucketing.h"
+#include "semi_direct_16_reloff_bucketing.h"
 
 namespace cindex
 {

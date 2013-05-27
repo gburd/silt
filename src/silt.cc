@@ -57,15 +57,16 @@ namespace silt {
     }
 
     Silt_Return
-    Silt::SetConfig(const Configuration* config)
+    Silt::SetConfig(const Configuration *config)
     {
         if (config_)
             return ERROR;
+
         config_ = config;
         return OK;
     }
 
-    const Configuration*
+    const Configuration *
     Silt::GetConfig() const
     {
         return config_;
@@ -84,7 +85,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt::ConvertTo(Silt* new_store) const
+    Silt::ConvertTo(Silt *new_store) const
     {
         (void)new_store;
         return UNSUPPORTED;
@@ -109,51 +110,58 @@ namespace silt {
     }
 
     Silt_Return
-    Silt::Status(const Silt_StatusType& type, Value& status) const
+    Silt::Status(const Silt_StatusType &type, Value &status) const
     {
-        (void)type; (void)status;
+        (void)type;
+        (void)status;
         return UNSUPPORTED;
     }
 
     Silt_Return
-    Silt::Put(const ConstValue& key, const ConstValue& data)
+    Silt::Put(const ConstValue &key, const ConstValue &data)
     {
-        (void)key; (void)data;
+        (void)key;
+        (void)data;
         return UNSUPPORTED;
     }
 
     Silt_Return
-    Silt::Append(Value& key, const ConstValue& data)
+    Silt::Append(Value &key, const ConstValue &data)
     {
-        (void)key; (void)data;
+        (void)key;
+        (void)data;
         return UNSUPPORTED;
     }
 
     Silt_Return
-    Silt::Delete(const ConstValue& key)
+    Silt::Delete(const ConstValue &key)
     {
         (void)key;
         return UNSUPPORTED;
     }
 
     Silt_Return
-    Silt::Contains(const ConstValue& key) const
+    Silt::Contains(const ConstValue &key) const
     {
         (void)key;
         return UNSUPPORTED;
     }
 
     Silt_Return
-    Silt::Length(const ConstValue& key, size_t& len) const
+    Silt::Length(const ConstValue &key, size_t &len) const
     {
-        (void)key; (void)len;
+        (void)key;
+        (void)len;
         return UNSUPPORTED;
     }
 
     Silt_Return
-    Silt::Get(const ConstValue& key, Value& data, size_t offset, size_t len) const
+    Silt::Get(const ConstValue &key, Value &data, size_t offset, size_t len) const
     {
-        (void)key; (void)data; (void)offset; (void)len;
+        (void)key;
+        (void)data;
+        (void)offset;
+        (void)len;
         return UNSUPPORTED;
     }
 
@@ -172,7 +180,7 @@ namespace silt {
     }
 
     Silt_ConstIterator
-    Silt::Find(const ConstValue& key) const
+    Silt::Find(const ConstValue &key) const
     {
         std::cerr << "unsupported Find() called" << std::endl;
         (void)key;
@@ -180,7 +188,7 @@ namespace silt {
     }
 
     Silt_Iterator
-    Silt::Find(const ConstValue& key)
+    Silt::Find(const ConstValue &key)
     {
         std::cerr << "unsupported Find() called" << std::endl;
         (void)key;

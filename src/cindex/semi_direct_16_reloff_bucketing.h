@@ -41,29 +41,54 @@
 
 #pragma once
 
-#include "common.hpp"
+#include "common.h"
+#include <vector>
+#include <boost/array.hpp>
+#include <tr1/unordered_map>
 
 namespace cindex
 {
-	class key_array
+	class semi_direct_16_reloff_bucketing
 	{
 	public:
-		key_array(std::size_t key_len, std::size_t size);
+		semi_direct_16_reloff_bucketing(std::size_t size = 0, std::size_t keys_per_bucket = 1, std::size_t keys_per_block = 1);
 
-		~key_array();
+		void resize(std::size_t size, std::size_t keys_per_bucket, std::size_t keys_per_block);
 
-		const uint8_t* operator[](std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
+		void insert(const std::size_t& index_offset, const std::size_t& dest_offset);
+		void finalize();
 
-		uint8_t* operator[](std::size_t i) CINDEX_WARN_UNUSED_RESULT;
+		std::size_t index_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
+		std::size_t dest_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
 
-		std::size_t key_len() const CINDEX_WARN_UNUSED_RESULT { return key_len_; }
 		std::size_t size() const CINDEX_WARN_UNUSED_RESULT;
 
-		void generate_random_keys(std::size_t off, std::size_t n, unsigned int seed = 0);
+		std::size_t bit_size() const CINDEX_WARN_UNUSED_RESULT;
+
+	protected:
+		void store(const std::size_t& idx, const std::size_t& type, const std::size_t& mask, const std::size_t& shift, const std::size_t& v);
+		std::size_t load(const std::size_t& idx, const std::size_t& type, const std::size_t& mask, const std::size_t& shift) const;
+
+		void store_delta(const std::size_t& idx, const std::size_t& type, const std::size_t& mask, const std::size_t& shift, const std::size_t& id, const long long int& v);
+		long long int load_delta(const std::size_t& idx, const std::size_t& type, const std::size_t& mask, const std::size_t& shift, const std::size_t& id) const;
 
 	private:
-		std::size_t key_len_;
 		std::size_t size_;
-		uint8_t* v_;
+		std::size_t keys_per_bucket_;
+		std::size_t keys_per_block_;
+
+		double bits_per_key_;
+		std::size_t bits_per_bucket_;
+
+		std::vector<boost::array<uint32_t, 2> > bucket_info_;
+		std::size_t current_i_;
+
+		std::size_t last_index_offsets_[16];
+		std::size_t last_dest_offsets_[16];
+
+		static const std::size_t ranks_[16];
+
+		typedef std::tr1::unordered_map<std::size_t, int16_t> overflow_table;
+		overflow_table overflow_;
 	};
 }

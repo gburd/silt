@@ -39,56 +39,73 @@
  * software in accordance with the terms specified in this license.
  */
 
-#include "key_array.hpp"
+#include "bit_vector.h"
 #include <cstring>
 
 namespace cindex
 {
-	key_array::key_array(std::size_t key_len, std::size_t size)
-		: key_len_(key_len), size_(size), v_(new uint8_t[key_len * size])
+	template<typename BlockType>
+	bit_vector<BlockType>::bit_vector()
+		: buf_(NULL), size_(0), capacity_(8)
 	{
-		assert(v_);
+		resize();
 	}
 
-	key_array::~key_array()
+	template<typename BlockType>
+	bit_vector<BlockType>::~bit_vector()
 	{
-		delete [] v_;
-		v_ = NULL;
+		clear();
 	}
 
-	const uint8_t*
-	key_array::operator[](std::size_t i) const
-	{
-		assert(i < size_);
-		return v_ + i * key_len_;
-	}
-
-	uint8_t*
-	key_array::operator[](std::size_t i)
-	{
-		assert(i < size_);
-		return v_ + i * key_len_;
-	}
-
-	std::size_t
-	key_array::size() const
-	{
-		return size_;
-	}
-
+	template<typename BlockType>
 	void
-	key_array::generate_random_keys(std::size_t off, std::size_t n, unsigned int seed)
+	bit_vector<BlockType>::clear()
 	{
-		assert(off + n <= size_);
+		free(buf_);
+		buf_ = NULL;
 
-		uint8_t key[key_len_];
-
-		srand(seed);
-		for (std::size_t i = off; i < off + n; i++)
-		{
-			for (std::size_t j = 0; j < key_len_; j++)
-				key[j] = static_cast<uint8_t>(rand());
-			memcpy((*this)[i], key, key_len_);
-		}
+		size_ = 0;
+		capacity_ = 0;
 	}
+
+	template<typename BlockType>
+	void
+	bit_vector<BlockType>::compact()
+	{
+		capacity_ = size_;
+		resize();
+	}
+
+	template<typename BlockType>
+	void
+	bit_vector<BlockType>::resize()
+	{
+		std::size_t old_byte_size = block_info<block_type>::size(size_);
+		std::size_t new_byte_size = block_info<block_type>::size(capacity_);
+
+		block_type* new_buf = reinterpret_cast<block_type*>(realloc(reinterpret_cast<void*>(buf_), new_byte_size));
+
+		if (!new_buf)
+		{
+			assert(buf_);
+			assert(new_byte_size > old_byte_size);
+
+			new_buf = reinterpret_cast<block_type*>(malloc(new_byte_size));
+			assert(new_buf);
+
+			memcpy(new_buf, buf_, old_byte_size);
+
+			free(buf_);
+		}
+
+		buf_ = new_buf;
+
+		if (new_byte_size > old_byte_size)
+			memset(reinterpret_cast<uint8_t*>(new_buf) + old_byte_size, 0, new_byte_size - old_byte_size);
+	}
+
+	template class bit_vector<uint8_t>;
+	template class bit_vector<uint16_t>;
+	template class bit_vector<uint32_t>;
+	template class bit_vector<uint64_t>;
 }

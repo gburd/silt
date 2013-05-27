@@ -1,6 +1,5 @@
 /* -*- Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-
 /*-
  * SILT: A Memory-Efficient, High-Performance Key-Value Store
  *
@@ -39,49 +38,45 @@
  * and others acting in its behalf permission to use and distribute the
  * software in accordance with the terms specified in this license.
  */
-#include "bit_access.hpp"
+
+#pragma once
+
+#include "common.h"
+#include <vector>
+#include <boost/array.hpp>
 
 namespace cindex
 {
-	/*
-#define CINDEX_SHIFT(base)	\
-	1ull << ((base) + 7), 1ull << ((base) + 6), 1ull << ((base) + 5), 1ull << ((base) + 4), 1ull << ((base) + 3), 1ull << ((base) + 2), 1ull << ((base) + 1), 1ull << ((base) + 0),
-
-	template<>
-	const uint8_t bit_table<uint8_t>::bit_table_[block_info<uint8_t>::bits_per_block] =
+	class semi_direct_16_absoff_bucketing
 	{
-		CINDEX_SHIFT(0)
-	};
+	public:
+		semi_direct_16_absoff_bucketing(std::size_t size = 0, std::size_t keys_per_bucket = 1, std::size_t keys_per_block = 1);
 
-	template<>
-	const uint16_t bit_table<uint16_t>::bit_table_[block_info<uint16_t>::bits_per_block] =
-	{
-		CINDEX_SHIFT(8)
-		CINDEX_SHIFT(0)
-	};
+		void resize(std::size_t size, std::size_t keys_per_bucket, std::size_t keys_per_block);
 
-	template<>
-	const uint32_t bit_table<uint32_t>::bit_table_[block_info<uint32_t>::bits_per_block] =
-	{
-		CINDEX_SHIFT(24)
-		CINDEX_SHIFT(16)
-		CINDEX_SHIFT(8)
-		CINDEX_SHIFT(0)
-	};
+		void insert(const std::size_t& index_offset, const std::size_t& dest_offset);
+		void finalize() {}
 
-	template<>
-	const uint64_t bit_table<uint64_t>::bit_table_[block_info<uint64_t>::bits_per_block] =
-	{
-		CINDEX_SHIFT(56)
-		CINDEX_SHIFT(48)
-		CINDEX_SHIFT(40)
-		CINDEX_SHIFT(32)
-		CINDEX_SHIFT(24)
-		CINDEX_SHIFT(16)
-		CINDEX_SHIFT(8)
-		CINDEX_SHIFT(0)
-	};
+		std::size_t index_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
+		std::size_t dest_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
 
-#undef CINDEX_SHIFT
-	*/
+		std::size_t size() const CINDEX_WARN_UNUSED_RESULT;
+
+		std::size_t bit_size() const CINDEX_WARN_UNUSED_RESULT;
+
+	protected:
+		void store(const std::size_t& idx, const std::size_t& type, const std::size_t& mask, const std::size_t& shift, const std::size_t& v);
+		std::size_t load(const std::size_t& idx, const std::size_t& type, const std::size_t& mask, const std::size_t& shift) const;
+
+	private:
+		std::size_t size_;
+
+		std::vector<boost::array<uint32_t, 2> > bucket_info_;
+		std::size_t current_i_;
+
+		std::size_t last_index_offsets_[16];
+		std::size_t last_dest_offsets_[16];
+
+		static const std::size_t ranks_[16];
+	};
 }

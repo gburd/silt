@@ -56,20 +56,20 @@
 
 namespace silt {
 
-    Silt*
+    Silt *
     Silt_Factory::New(std::string config_file)
     {
         DPRINTF(2, "Silt_Factory::New(): use config file: %s\n", config_file.c_str());
-        Configuration* config = new Configuration(config_file);
+        Configuration *config = new Configuration(config_file);
         return Silt_Factory::New(config);
     }
 
-    Silt*
-    Silt_Factory::New(const Configuration* config)
+    Silt *
+    Silt_Factory::New(const Configuration *config)
     {
         std::string type = config->GetStringValue("child::type");
         DPRINTF(2, "Silt_Factory::New(): creating a new instance of type=%s\n", type.c_str());
-        Silt* result = NULL;
+        Silt *result = NULL;
 
         if (type == "file")
             result = new FileStore();
@@ -91,9 +91,11 @@ namespace silt {
             result = new Silt_Proxy();
         else if (type == "monitor")
             result = new Silt_Monitor();
+
 #ifdef HAVE_LIBDB
         else if (type == "bdb")
             result = new BDB();
+
 #endif
 
         if (!result)

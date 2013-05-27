@@ -42,7 +42,7 @@
 #include "silt_partition.h"
 #include "silt_factory.h"
 #include "debug.h"
-#include "bit_access.hpp"
+#include "bit_access.h"
 #include <sstream>
 
 namespace silt {
@@ -96,11 +96,13 @@ namespace silt {
         if (!stores_.size())
             return ERROR;
 
-        for (std::vector<Silt*>::iterator it = stores_.begin(); it != stores_.end(); ++it) {
+        for (std::vector<Silt *>::iterator it = stores_.begin(); it != stores_.end(); ++it) {
             Silt_Return ret = (*it)->Flush();
+
             if (ret != OK)
                 return ret;
         }
+
         return OK;
     }
 
@@ -110,15 +112,18 @@ namespace silt {
         if (!stores_.size())
             return ERROR;
 
-        for (std::vector<Silt*>::iterator it = stores_.begin(); it != stores_.end(); ++it) {
+        for (std::vector<Silt *>::iterator it = stores_.begin(); it != stores_.end(); ++it) {
             if (*it) {
                 Silt_Return ret = (*it)->Close();
+
                 if (ret != OK)
                     return ret;
+
                 delete *it;
                 *it = NULL;
             }
         }
+
         stores_.clear();
         return OK;
     }
@@ -127,18 +132,18 @@ namespace silt {
     Silt_Partition::Destroy()
     {
         for (size_t i = 0; i < partitions_; i++) {
-            Configuration* storeConfig = new Configuration(config_, true);
+            Configuration *storeConfig = new Configuration(config_, true);
             storeConfig->SetContextNode("child::store");
-
             char buf[1024];
             snprintf(buf, sizeof(buf), "%s_%zu", config_->GetStringValue("child::id").c_str(), i);
             storeConfig->SetStringValue("child::id", buf);
+            Silt *store = Silt_Factory::New(storeConfig);
 
-            Silt* store = Silt_Factory::New(storeConfig);
             if (!store) {
                 delete storeConfig;
                 return ERROR;
             }
+
             store->Destroy();
             delete store;
         }
@@ -146,42 +151,49 @@ namespace silt {
         return OK;
     }
 
-	Silt_Return
-	Silt_Partition::Status(const Silt_StatusType& type, Value& status) const
-	{
+    Silt_Return
+    Silt_Partition::Status(const Silt_StatusType &type, Value &status) const
+    {
         std::ostringstream oss;
+
         switch (type) {
-        case NUM_DATA:
-        case NUM_ACTIVE_DATA:
-		case CAPACITY:
-        case MEMORY_USE:
-        case DISK_USE:
-            {
+            case NUM_DATA:
+            case NUM_ACTIVE_DATA:
+            case CAPACITY:
+            case MEMORY_USE:
+            case DISK_USE: {
                 bool first = true;
                 Value status_part;
                 oss << '[';
-                for (std::vector<Silt*>::const_iterator it = stores_.begin(); it != stores_.end(); ++it) {
+
+                for (std::vector<Silt *>::const_iterator it = stores_.begin(); it != stores_.end(); ++it) {
                     if (first)
                         first = false;
                     else
                         oss << ',';
+
                     Silt_Return ret = (*it)->Status(type, status_part);
+
                     if (ret != OK)
                         return UNSUPPORTED;
+
                     oss << status_part.str();
                 }
+
                 oss << ']';
             }
             break;
-        default:
-            return UNSUPPORTED;
+
+            default:
+                return UNSUPPORTED;
         }
+
         status = NewValue(oss.str());
         return OK;
     }
 
     Silt_Return
-    Silt_Partition::Put(const ConstValue& key, const ConstValue& data)
+    Silt_Partition::Put(const ConstValue &key, const ConstValue &data)
     {
         if (!stores_.size())
             return ERROR;
@@ -191,7 +203,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Partition::Append(Value& key, const ConstValue& data)
+    Silt_Partition::Append(Value &key, const ConstValue &data)
     {
         if (!stores_.size())
             return ERROR;
@@ -201,7 +213,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Partition::Delete(const ConstValue& key)
+    Silt_Partition::Delete(const ConstValue &key)
     {
         if (!stores_.size())
             return ERROR;
@@ -211,7 +223,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Partition::Contains(const ConstValue& key) const
+    Silt_Partition::Contains(const ConstValue &key) const
     {
         if (!stores_.size())
             return ERROR;
@@ -221,7 +233,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Partition::Length(const ConstValue& key, size_t& len) const
+    Silt_Partition::Length(const ConstValue &key, size_t &len) const
     {
         if (!stores_.size())
             return ERROR;
@@ -231,7 +243,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Partition::Get(const ConstValue& key, Value& data, size_t offset, size_t len) const
+    Silt_Partition::Get(const ConstValue &key, Value &data, size_t offset, size_t len) const
     {
         if (!stores_.size())
             return ERROR;
@@ -243,7 +255,7 @@ namespace silt {
     Silt_ConstIterator
     Silt_Partition::Enumerate() const
     {
-        IteratorElem* elem = new IteratorElem(this);
+        IteratorElem *elem = new IteratorElem(this);
         elem->next_store = 0;
         elem->Next();
         return Silt_ConstIterator(elem);
@@ -252,14 +264,14 @@ namespace silt {
     Silt_Iterator
     Silt_Partition::Enumerate()
     {
-        IteratorElem* elem = new IteratorElem(this);
+        IteratorElem *elem = new IteratorElem(this);
         elem->next_store = 0;
         elem->Next();
         return Silt_Iterator(elem);
     }
 
     Silt_ConstIterator
-    Silt_Partition::Find(const ConstValue& key) const
+    Silt_Partition::Find(const ConstValue &key) const
     {
         if (!stores_.size())
             return Silt_ConstIterator();
@@ -269,7 +281,7 @@ namespace silt {
     }
 
     Silt_Iterator
-    Silt_Partition::Find(const ConstValue& key)
+    Silt_Partition::Find(const ConstValue &key)
     {
         if (!stores_.size())
             return Silt_Iterator();
@@ -282,9 +294,9 @@ namespace silt {
     Silt_Partition::alloc_stores()
     {
         skip_bits_ = atoi(config_->GetStringValue("child::skip_bits").c_str());
-
         partitions_ = atoi(config_->GetStringValue("child::partitions").c_str());
         partition_bits_ = 0;
+
         while ((1u << partition_bits_) < partitions_)
             partition_bits_++;
 
@@ -299,46 +311,49 @@ namespace silt {
         }
 
         for (size_t i = 0; i < partitions_; i++) {
-            Configuration* storeConfig = new Configuration(config_, true);
+            Configuration *storeConfig = new Configuration(config_, true);
             storeConfig->SetContextNode("child::store");
-
             char buf[1024];
             snprintf(buf, sizeof(buf), "%s_%zu", config_->GetStringValue("child::id").c_str(), i);
             storeConfig->SetStringValue("child::id", buf);
+            Silt *store = Silt_Factory::New(storeConfig);
 
-            Silt* store = Silt_Factory::New(storeConfig);
             if (!store) {
                 delete storeConfig;
                 return ERROR;
             }
+
             stores_.push_back(store);
         }
+
         return OK;
     }
 
     size_t
-    Silt_Partition::get_partition(const ConstValue& key) const
+    Silt_Partition::get_partition(const ConstValue &key) const
     {
         std::size_t bits = 0;
         std::size_t index = 0;
-        while (bits < partition_bits_)
-		{
+
+        while (bits < partition_bits_) {
             index <<= 1;
-            if ((skip_bits_ + bits) / 8 > key.size())
-			{
-				// too short key
-				assert(false);
+
+            if ((skip_bits_ + bits) / 8 > key.size()) {
+                // too short key
+                assert(false);
                 break;
             }
-            if (cindex::bit_access::get(reinterpret_cast<const uint8_t*>(key.data()), skip_bits_ + bits))
+
+            if (cindex::bit_access::get(reinterpret_cast<const uint8_t *>(key.data()), skip_bits_ + bits))
                 index |= 1;
+
             bits++;
         }
 
         return index;
     }
 
-    Silt_Partition::IteratorElem::IteratorElem(const Silt_Partition* silt)
+    Silt_Partition::IteratorElem::IteratorElem(const Silt_Partition *silt)
     {
         this->silt = silt;
     }
@@ -347,10 +362,10 @@ namespace silt {
     {
     }
 
-    Silt_IteratorElem*
+    Silt_IteratorElem *
     Silt_Partition::IteratorElem::Clone() const
     {
-        IteratorElem* elem = new IteratorElem(static_cast<const Silt_Partition*>(silt));
+        IteratorElem *elem = new IteratorElem(static_cast<const Silt_Partition *>(silt));
         *elem = *this;
         return elem;
     }
@@ -358,7 +373,7 @@ namespace silt {
     void
     Silt_Partition::IteratorElem::Next()
     {
-        const Silt_Partition* silt_part = static_cast<const Silt_Partition*>(silt);
+        const Silt_Partition *silt_part = static_cast<const Silt_Partition *>(silt);
 
         if (!store_it.IsEnd())
             ++store_it;
@@ -368,6 +383,7 @@ namespace silt {
                 state = END;
                 return;
             }
+
             store_it = silt_part->stores_[next_store++]->Enumerate();
         }
 

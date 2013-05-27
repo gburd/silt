@@ -50,7 +50,7 @@ namespace silt {
 
     Silt_Monitor::Silt_Monitor()
         : exiting_(false),
-        rate_limiter_(1, 1, 1, 1000000000L)    // 1s report interval
+          rate_limiter_(1, 1, 1, 1000000000L)    // 1s report interval
     {
         write_ops_ = 0;
         read_ops_ = 0;
@@ -67,17 +67,21 @@ namespace silt {
     Silt_Monitor::Create()
     {
         Silt_Return ret = this->Silt_Proxy::Create();
+
         if (store_) {
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
+
             last_time_ = static_cast<uint64_t>(tv.tv_sec) * 1000000000Lu + static_cast<uint64_t>(tv.tv_usec) * 1000Lu;
 
             if (pthread_create(&tid_, NULL, thread_main, this)) {
                 perror("Error while creating a monitor thread");
             }
         }
+
         return ret;
     }
 
@@ -85,17 +89,21 @@ namespace silt {
     Silt_Monitor::Open()
     {
         Silt_Return ret = this->Silt_Proxy::Open();
+
         if (store_) {
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
+
             last_time_ = static_cast<uint64_t>(tv.tv_sec) * 1000000000Lu + static_cast<uint64_t>(tv.tv_usec) * 1000Lu;
 
             if (pthread_create(&tid_, NULL, thread_main, this)) {
                 perror("Error while creating a monitor thread");
             }
         }
+
         return ret;
     }
 
@@ -105,6 +113,7 @@ namespace silt {
         if (store_) {
             // this has a race condition issue but should be find if usually only one thread calls Close()
             exiting_ = true;
+
             //if (pthread_cancel(tid_)) {
             //    perror("Error while canceling the monitor thread");
             //}
@@ -118,109 +127,106 @@ namespace silt {
 
 
     Silt_Return
-    Silt_Monitor::Put(const ConstValue& key, const ConstValue& data)
+    Silt_Monitor::Put(const ConstValue &key, const ConstValue &data)
     {
         ++write_ops_;
         return this->Silt_Proxy::Put(key, data);
     }
 
     Silt_Return
-    Silt_Monitor::Append(Value& key, const ConstValue& data)
+    Silt_Monitor::Append(Value &key, const ConstValue &data)
     {
         ++write_ops_;
         return this->Silt_Proxy::Append(key, data);
     }
 
     Silt_Return
-    Silt_Monitor::Delete(const ConstValue& key)
+    Silt_Monitor::Delete(const ConstValue &key)
     {
         ++write_ops_;
         return this->Silt_Proxy::Delete(key);
     }
 
     Silt_Return
-    Silt_Monitor::Contains(const ConstValue& key) const
+    Silt_Monitor::Contains(const ConstValue &key) const
     {
         ++read_ops_;
         return this->Silt_Proxy::Contains(key);
     }
 
     Silt_Return
-    Silt_Monitor::Length(const ConstValue& key, size_t& len) const
+    Silt_Monitor::Length(const ConstValue &key, size_t &len) const
     {
         ++read_ops_;
         return this->Silt_Proxy::Length(key, len);
     }
 
     Silt_Return
-    Silt_Monitor::Get(const ConstValue& key, Value& data, size_t offset, size_t len) const
+    Silt_Monitor::Get(const ConstValue &key, Value &data, size_t offset, size_t len) const
     {
         ++read_ops_;
         return this->Silt_Proxy::Get(key, data, offset, len);
     }
 
-    void*
-    Silt_Monitor::thread_main(void* arg)
+    void *
+    Silt_Monitor::thread_main(void *arg)
     {
-        Silt_Monitor* monitor = reinterpret_cast<Silt_Monitor*>(arg);
+        Silt_Monitor *monitor = reinterpret_cast<Silt_Monitor *>(arg);
 
         while (!monitor->exiting_) {
             monitor->rate_limiter_.remove_tokens(1);
-
             size_t read_ops = monitor->read_ops_;
             monitor->read_ops_ -= read_ops;
-
             size_t write_ops = monitor->write_ops_;
             monitor->write_ops_ -= write_ops;
-
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
 
             uint64_t current_time = static_cast<uint64_t>(tv.tv_sec) * 1000000000Lu + static_cast<uint64_t>(tv.tv_usec) * 1000Lu;
-
             double time_diff = static_cast<double>(current_time - monitor->last_time_) / 1000000000.;
             monitor->last_time_ = current_time;
-
             size_t rmem_size = 0;
 #ifndef __APPLE__
-            FILE* fp = fopen("/proc/self/statm", "r");
+            FILE *fp = fopen("/proc/self/statm", "r");
+
             if (fp) {
                 unsigned long vmem;
                 unsigned long rmem = 0;
+
                 if (fscanf(fp, "%lu %lu", &vmem, &rmem) == 2) {
                     rmem_size = rmem * getpagesize();
                 }
+
                 fclose(fp);
             }
-#endif
 
+#endif
             Value status_num_active_data;
             monitor->Status(NUM_ACTIVE_DATA, status_num_active_data);
-
             Value status_memory_use;
             monitor->Status(MEMORY_USE, status_memory_use);
-
             fprintf(stdout, "%llu.%06llu: %9.2lf reads/s, %9.2lf writes/s, %7.2lf MB total\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     static_cast<double>(read_ops) / time_diff,
                     static_cast<double>(write_ops) / time_diff,
                     static_cast<double>(rmem_size) / 1000000.
-                );
+                   );
             fprintf(stdout, "%llu.%06llu: NUM_ACTIVE_DATA %s\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     status_num_active_data.str().c_str()
-                );
+                   );
             fprintf(stdout, "%llu.%06llu: MEMORY_USE %s\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     status_memory_use.str().c_str()
-                );
+                   );
             fflush(stdout);
-       }
+        }
 
         return NULL;
     }

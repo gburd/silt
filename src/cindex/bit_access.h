@@ -41,8 +41,8 @@
 
 #pragma once
 
-#include "common.hpp"
-#include "block_info.hpp"
+#include "common.h"
+#include "block_info.h"
 #include <algorithm>
 //#include <iostream>	// for debug
 

@@ -85,20 +85,19 @@ namespace silt {
         char buf[1024];
 
         if (key_len_ != 0 && data_len_ != 0) {
-            const char* nsort_definition =
+            const char *nsort_definition =
                 " -format=size: %zu"
                 " -field=Key, char, offset: 0, size: %zu"
                 " -key=Key"
                 " -temp_file=%s";
-
             snprintf(buf, sizeof(buf), nsort_definition, key_len_ + data_len_, key_len_, temp_file_.c_str());
-        }
-        else {
+        } else {
             // currently not supported
             return ERROR;
         }
 
         nsort_msg_t ret = nsort_define(buf, 0, NULL, &nsort_ctx_);
+
         if (ret != NSORT_SUCCESS) {
             fprintf(stderr, "Nsort error: %s\n", nsort_message(&nsort_ctx_));
             return ERROR;
@@ -106,22 +105,21 @@ namespace silt {
 
         nsort_buf_.resize(key_len_ + data_len_);
 #endif
-
         open_ = true;
         input_ended_ = false;
-
         return OK;
     }
 
 #ifndef HAVE_LIBNSORT
     struct _ordering {
-        const std::vector<Value>& key_array;
+        const std::vector<Value> &key_array;
 
-        _ordering(const std::vector<Value>& key_array) : key_array(key_array) {}
+        _ordering(const std::vector<Value> &key_array) : key_array(key_array) {}
 
-        bool operator()(const size_t& i, const size_t& j) {
+        bool operator()(const size_t &i, const size_t &j) {
             // sort key = (entry key, index)
             int cmp = key_array[i].compare(key_array[j]);
+
             if (cmp != 0)
                 return cmp < 0;
             else
@@ -135,27 +133,28 @@ namespace silt {
     {
         if (!open_)
             return ERROR;
+
         if (input_ended_)
             return ERROR;
 
         input_ended_ = true;
-
 #ifndef HAVE_LIBNSORT
         refs_.reserve(key_array_.size());
+
         for (size_t i = 0; i < key_array_.size(); i++)
             refs_.push_back(i);
 
         // uses unstable sorting with stable sort key comparison
         // because std::sort() is often more efficient than std::stable_sort()
         std::sort(refs_.begin(), refs_.end(), _ordering(key_array_));
-
         refs_it_ = refs_.begin();
 #else
         nsort_msg_t ret = nsort_release_end(&nsort_ctx_);
+
         if (ret != NSORT_SUCCESS)
             fprintf(stderr, "Nsort error: %s\n", nsort_message(&nsort_ctx_));
-#endif
 
+#endif
         return OK;
     }
 
@@ -173,21 +172,22 @@ namespace silt {
         nsort_end(&nsort_ctx_);
         nsort_buf_.resize(0);
 #endif
-
         open_ = false;
         return OK;
     }
 
     Silt_Return
-    Sorter::Put(const ConstValue& key, const ConstValue& data)
+    Sorter::Put(const ConstValue &key, const ConstValue &data)
     {
         if (!open_)
             return ERROR;
+
         if (input_ended_)
             return ERROR;
 
         if (key.size() != key_len_)
             return INVALID_KEY;
+
         if (data.size() != data_len_)
             return INVALID_DATA;
 
@@ -199,12 +199,12 @@ namespace silt {
 #else
         memcpy(nsort_buf_.data(), key.data(), key_len_);
         memcpy(nsort_buf_.data() + key_len_, data.data(), data_len_);
-
         nsort_msg_t ret = nsort_release_recs(nsort_buf_.data(), key_len_ + data_len_, &nsort_ctx_);
+
         if (ret != NSORT_SUCCESS)
             fprintf(stderr, "Nsort error: %s\n", nsort_message(&nsort_ctx_));
-#endif
 
+#endif
         return OK;
     }
 
@@ -213,13 +213,13 @@ namespace silt {
     {
         if (!open_)
             return Silt_ConstIterator();
+
         if (!input_ended_)
             return Silt_ConstIterator();
 
-        IteratorElem* elem = new IteratorElem(this);
+        IteratorElem *elem = new IteratorElem(this);
         elem->state = OK;
         elem->Increment(true);
-
         return Silt_ConstIterator(elem);
     }
 
@@ -228,25 +228,25 @@ namespace silt {
     {
         if (!open_)
             return Silt_Iterator();
+
         if (!input_ended_)
             return Silt_Iterator();
 
-        IteratorElem* elem = new IteratorElem(this);
+        IteratorElem *elem = new IteratorElem(this);
         elem->state = OK;
         elem->Increment(true);
-
         return Silt_Iterator(elem);
     }
 
-    Sorter::IteratorElem::IteratorElem(const Sorter* silt)
+    Sorter::IteratorElem::IteratorElem(const Sorter *silt)
     {
         this->silt = silt;
     }
 
-    Silt_IteratorElem*
+    Silt_IteratorElem *
     Sorter::IteratorElem::Clone() const
     {
-        IteratorElem* elem = new IteratorElem(static_cast<const Sorter*>(silt));
+        IteratorElem *elem = new IteratorElem(static_cast<const Sorter *>(silt));
         *elem = *this;
         return elem;
     }
@@ -263,11 +263,9 @@ namespace silt {
         if (state == END)
             return;
 
-        const Sorter* sorter = static_cast<const Sorter*>(silt);
-
+        const Sorter *sorter = static_cast<const Sorter *>(silt);
 #ifndef HAVE_LIBNSORT
-
-        std::vector<size_t>::const_iterator& refs_it = sorter->refs_it_;
+        std::vector<size_t>::const_iterator &refs_it = sorter->refs_it_;
 
         if (!initial)
             ++refs_it;
@@ -280,20 +278,17 @@ namespace silt {
         state = OK;
         key = sorter->key_array_[*refs_it];
         data = sorter->data_array_[*refs_it];
-
 #else
-
         (void)initial;
-
         size_t size = sorter->key_len_ + sorter->data_len_;
         nsort_msg_t ret = nsort_return_recs(sorter->nsort_buf_.data(), &size, &sorter->nsort_ctx_);
+
         if (ret == NSORT_SUCCESS) {
             assert(size == sorter->key_len_ + sorter->data_len_);
             key = NewValue(sorter->nsort_buf_.data(), sorter->key_len_);
             data = NewValue(sorter->nsort_buf_.data() + sorter->key_len_, sorter->data_len_);
             state = OK;
-        }
-        else if (ret == NSORT_END_OF_OUTPUT)
+        } else if (ret == NSORT_END_OF_OUTPUT)
             state = END;
         else {
             fprintf(stderr, "Nsort error: %s\n", nsort_message(&sorter->nsort_ctx_));

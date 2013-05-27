@@ -41,55 +41,68 @@
 
 #pragma once
 
-#include "common.hpp"
+#include "common.h"
+#include "bit_vector.h"
+#include "key_array.h"
+#include "trie.h"
 #include <vector>
-#include <boost/array.hpp>
-#include <tr1/unordered_map>
 
 namespace cindex
 {
-	class twolevel_reloff_bucketing
+	template<typename BucketingType>
+	class bucketing_index
 	{
 	public:
-		twolevel_reloff_bucketing(std::size_t size = 0, std::size_t keys_per_bucket = 1, std::size_t keys_per_block = 1);
+		typedef BucketingType bucketing_type;
 
-		void resize(std::size_t size, std::size_t keys_per_bucket, std::size_t keys_per_block);
+	public:
+		bucketing_index(std::size_t key_len, std::size_t n, std::size_t bucket_size, std::size_t dest_base = 0, std::size_t dest_keys_per_block = 1, std::size_t skip_bits = 0);
+		bucketing_index(int fd, off_t offset);
+		~bucketing_index();
 
-		void insert(const std::size_t& index_offset, const std::size_t& dest_offset);
-		void finalize();
+		bool finalized() const CINDEX_WARN_UNUSED_RESULT;
 
-		std::size_t index_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
-		std::size_t dest_offset(std::size_t i) const CINDEX_WARN_UNUSED_RESULT;
+		bool insert(const uint8_t* key);
+		void flush();
 
-		std::size_t size() const CINDEX_WARN_UNUSED_RESULT;
+		ssize_t store_to_file(int fd, off_t offset) CINDEX_WARN_UNUSED_RESULT;
 
+		std::size_t locate(const uint8_t* key) const CINDEX_WARN_UNUSED_RESULT;
+
+		std::size_t bit_size_trie_only() const CINDEX_WARN_UNUSED_RESULT;
 		std::size_t bit_size() const CINDEX_WARN_UNUSED_RESULT;
 
 	protected:
-		void store(const std::size_t& idx, const std::size_t& type, const std::size_t& v);
-		std::size_t load(const std::size_t& idx, const std::size_t& type) const;
+		std::size_t find_bucket(const uint8_t* key) const CINDEX_WARN_UNUSED_RESULT;
+		void index_pending_keys();
 
-		void store_delta(const std::size_t& idx, const std::size_t& type, const std::size_t& id, const long long int& v);
-		long long int load_delta(const std::size_t& idx, const std::size_t& type, const std::size_t& id) const;
+		ssize_t load_from_file(int fd, off_t offset) CINDEX_WARN_UNUSED_RESULT;
+
+		typedef bit_vector<> vector_type;
+		typedef key_array key_array_type;
 
 	private:
-		std::size_t size_;
-		std::size_t keys_per_bucket_;
-		std::size_t keys_per_block_;
+		std::size_t key_len_;
+		std::size_t n_;
 
-		double bits_per_key_;
-		std::size_t bits_per_bucket_;
+		std::size_t bucket_size_;
 
-		std::vector<boost::array<uint8_t, 2> > bucket_info_;
-		std::size_t current_i_;
+		std::size_t dest_base_;
+		std::size_t dest_keys_per_block_;
+		std::size_t skip_bits_;
 
-		static const std::size_t group_size_ = 29;	// for 64-byte alignment
-		//static const std::size_t group_size_ = 13;	// for 32-byte alignment
+		std::size_t bucket_count_;
+		std::size_t bucket_bits_;
 
-		std::size_t last_index_offsets_[group_size_];
-		std::size_t last_dest_offsets_[group_size_];
+        vector_type repr_;
+		trie<> trie_;
 
-		typedef std::tr1::unordered_map<std::size_t, int16_t> overflow_table;
-		overflow_table overflow_;
+		bucketing_type bucketing_;
+
+		std::size_t last_dest_offset_;
+		std::size_t pending_bucket_;
+		//key_array_type* pending_keys_;
+		std::vector<const uint8_t*> pending_keys_;
+		std::size_t pending_key_count_;
 	};
 }

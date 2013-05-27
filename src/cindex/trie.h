@@ -41,11 +41,11 @@
 
 #pragma once
 
-#include "common.hpp"
-#include "bit_access.hpp"
-#include "huffman.hpp"
-#include "exp_golomb.hpp"
-#include "sign_interleave.hpp"
+#include "common.h"
+#include "bit_access.h"
+#include "huffman.h"
+#include "exp_golomb.h"
+#include "sign_interleave.h"
 //#include <iostream>
 
 namespace cindex

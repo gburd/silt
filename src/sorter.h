@@ -60,59 +60,59 @@ namespace silt {
     //   <temp-file>: the path of the temporary files/directory. "/tmp" is the default.
 
     class Sorter : public Silt {
-    public:
-        Sorter();
-        virtual ~Sorter();
+        public:
+            Sorter();
+            virtual ~Sorter();
 
-        virtual Silt_Return Create();
-        //virtual Silt_Return Open();
+            virtual Silt_Return Create();
+            //virtual Silt_Return Open();
 
-        virtual Silt_Return Flush();
-        virtual Silt_Return Close();
+            virtual Silt_Return Flush();
+            virtual Silt_Return Close();
 
-        //virtual Silt_Return Destroy();
+            //virtual Silt_Return Destroy();
 
-        virtual Silt_Return Put(const ConstValue& key, const ConstValue& data);
-        //virtual Silt_Return Append(Value& key, const ConstValue& data);
+            virtual Silt_Return Put(const ConstValue &key, const ConstValue &data);
+            //virtual Silt_Return Append(Value& key, const ConstValue& data);
 
-        //virtual Silt_Return Delete(const ConstValue& key);
+            //virtual Silt_Return Delete(const ConstValue& key);
 
-        //virtual Silt_Return Contains(const ConstValue& key) const;
-        //virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
-        //virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
+            //virtual Silt_Return Contains(const ConstValue& key) const;
+            //virtual Silt_Return Length(const ConstValue& key, size_t& len) const;
+            //virtual Silt_Return Get(const ConstValue& key, Value& data, size_t offset = 0, size_t len = -1) const;
 
-        virtual Silt_ConstIterator Enumerate() const;
-        virtual Silt_Iterator Enumerate();
+            virtual Silt_ConstIterator Enumerate() const;
+            virtual Silt_Iterator Enumerate();
 
-        //virtual Silt_ConstIterator Find(const ConstValue& key) const;
-        //virtual Silt_Iterator Find(const ConstValue& key);
+            //virtual Silt_ConstIterator Find(const ConstValue& key) const;
+            //virtual Silt_Iterator Find(const ConstValue& key);
 
-        struct IteratorElem : public Silt_IteratorElem {
-            IteratorElem(const Sorter* silt);
+            struct IteratorElem : public Silt_IteratorElem {
+                IteratorElem(const Sorter *silt);
 
-            Silt_IteratorElem* Clone() const;
-            void Next();
+                Silt_IteratorElem *Clone() const;
+                void Next();
 
-            void Increment(bool initial);
-        };
+                void Increment(bool initial);
+            };
 
-    protected:
-        bool open_;
-        bool input_ended_;
+        protected:
+            bool open_;
+            bool input_ended_;
 
-        size_t key_len_;
-        size_t data_len_;
+            size_t key_len_;
+            size_t data_len_;
 
-        std::string temp_file_;
+            std::string temp_file_;
 
 #ifndef HAVE_LIBNSORT
-        std::vector<Value> key_array_;
-        std::vector<Value> data_array_;
-        std::vector<size_t> refs_;
-        mutable std::vector<size_t>::const_iterator refs_it_;
+            std::vector<Value> key_array_;
+            std::vector<Value> data_array_;
+            std::vector<size_t> refs_;
+            mutable std::vector<size_t>::const_iterator refs_it_;
 #else
-        mutable nsort_t nsort_ctx_;
-        mutable Value nsort_buf_;
+            mutable nsort_t nsort_ctx_;
+            mutable Value nsort_buf_;
 #endif
     };
 

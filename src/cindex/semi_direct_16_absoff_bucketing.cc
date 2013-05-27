@@ -39,7 +39,7 @@
  * software in accordance with the terms specified in this license.
  */
 
-#include "semi_direct_16_absoff_bucketing.hpp"
+#include "semi_direct_16_absoff_bucketing.h"
 #include <iostream>
 
 namespace cindex

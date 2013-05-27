@@ -39,7 +39,7 @@
  * software in accordance with the terms specified in this license.
  */
 
-#include "expected_size.hpp"
+#include "expected_size.h"
 #include <iostream>
 
 namespace cindex

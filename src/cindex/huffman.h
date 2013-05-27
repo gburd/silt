@@ -41,8 +41,8 @@
 
 #pragma once
 
-#include "common.hpp"
-#include "bit_access.hpp"
+#include "common.h"
+#include "bit_access.h"
 #include <map>
 #include <cstring>
 

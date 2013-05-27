@@ -4,8 +4,8 @@ libsilt_la_CPPFLAGS=		-I$(top_srcdir)/utils -D_FILE_OFFSET_BITS=64 \
 libsilt_la_LIBADD=		$(top_builddir)/utils/libsiltkvutils.la
 
 noinst_HEADERS= \
-	DOMTreeErrorReporter.hpp \
-	DOMWriteErrorHandler.hpp \
+	DOMTreeErrorReporter.h \
+	DOMWriteErrorHandler.h \
 	bdb.h \
 	configuration.h \
 	file_io.h \
@@ -30,18 +30,18 @@ noinst_HEADERS= \
 	value.h
 
 libsilt_la_SOURCES= \
-	DOMTreeErrorReporter.cpp \
-	DOMWriteErrorHandler.cpp \
+	DOMTreeErrorReporter.cc \
+	DOMWriteErrorHandler.cc \
 	bdb.cc \
-	cindex/bit_access.cpp \
-	cindex/bit_vector.cpp \
-	cindex/bucketing_index.cpp \
-	cindex/expected_size.cpp \
-	cindex/flat_absoff_bucketing.cpp \
-	cindex/semi_direct_16_absoff_bucketing.cpp \
-	cindex/semi_direct_16_reloff_bucketing.cpp \
-	cindex/twolevel_absoff_bucketing.cpp \
-	cindex/twolevel_reloff_bucketing.cpp \
+	cindex/bit_access.cc \
+	cindex/bit_vector.cc \
+	cindex/bucketing_index.cc \
+	cindex/expected_size.cc \
+	cindex/flat_absoff_bucketing.cc \
+	cindex/semi_direct_16_absoff_bucketing.cc \
+	cindex/semi_direct_16_reloff_bucketing.cc \
+	cindex/twolevel_absoff_bucketing.cc \
+	cindex/twolevel_reloff_bucketing.cc \
 	configuration.cc \
 	file_io.cc \
 	file_store.cc \

@@ -41,9 +41,9 @@
 
 #pragma once
 
-#include "common.hpp"
-#include "block_info.hpp"
-#include "bit_access.hpp"
+#include "common.h"
+#include "block_info.h"
+#include "bit_access.h"
 
 namespace cindex
 {

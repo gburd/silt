@@ -125,6 +125,7 @@ namespace silt {
             store0_low_watermark_ = atoi(config_->GetStringValue("child::store0-low-watermark").c_str());
         else
             store0_low_watermark_ = 1;
+
         if (store0_low_watermark_ < 1 || store0_high_watermark_ <= store0_low_watermark_)
             return ERROR;
 
@@ -137,27 +138,22 @@ namespace silt {
             store1_low_watermark_ = atoi(config_->GetStringValue("child::store1-low-watermark").c_str());
         else
             store1_low_watermark_ = 0;
+
         if (store1_high_watermark_ <= store1_low_watermark_)
             return ERROR;
 
         next_ids_.push_back(0);
         next_ids_.push_back(0);
         next_ids_.push_back(0);
-
-        all_stores_.push_back(std::vector<Silt*>());
-        all_stores_.push_back(std::vector<Silt*>());
-        all_stores_.push_back(std::vector<Silt*>());
-
+        all_stores_.push_back(std::vector<Silt *>());
+        all_stores_.push_back(std::vector<Silt *>());
+        all_stores_.push_back(std::vector<Silt *>());
         all_stores_[0].push_back(alloc_store(0));
         all_stores_[0].back()->Create();
-
         back_store_size_ = 0;
-
         convert_task_running_ = false;
         merge_task_running_ = false;
-
         open_ = true;
-
         return OK;
     }
 
@@ -168,7 +164,6 @@ namespace silt {
             return ERROR;
 
         // TODO: store and load next IDs for persistency
-
         id_ = config_->GetStringValue("child::id");
 
         if (config_->ExistsNode("child::key-len") == 0)
@@ -200,6 +195,7 @@ namespace silt {
             store0_low_watermark_ = atoi(config_->GetStringValue("child::store0-low-watermark").c_str());
         else
             store0_low_watermark_ = 1;
+
         if (store0_low_watermark_ < 1 || store0_high_watermark_ <= store0_low_watermark_)
             return ERROR;
 
@@ -212,27 +208,22 @@ namespace silt {
             store1_low_watermark_ = atoi(config_->GetStringValue("child::store1-low-watermark").c_str());
         else
             store1_low_watermark_ = 0;
+
         if (store1_high_watermark_ <= store1_low_watermark_)
             return ERROR;
 
         next_ids_.push_back(0);
         next_ids_.push_back(0);
         next_ids_.push_back(0);
-
-        all_stores_.push_back(std::vector<Silt*>());
-        all_stores_.push_back(std::vector<Silt*>());
-        all_stores_.push_back(std::vector<Silt*>());
-
+        all_stores_.push_back(std::vector<Silt *>());
+        all_stores_.push_back(std::vector<Silt *>());
+        all_stores_.push_back(std::vector<Silt *>());
         all_stores_[0].push_back(alloc_store(0));
         all_stores_[0].back()->Create();
-
         back_store_size_ = 0;
-
         convert_task_running_ = false;
         merge_task_running_ = false;
-
         open_ = true;
-
         return OK;
     }
 
@@ -244,14 +235,12 @@ namespace silt {
 
         {
             tbb::queuing_rw_mutex::scoped_lock lock(mutex_, false);
-
             Silt_Return ret = all_stores_[0][0]->Flush();
+
             if (ret != OK)
                 return ret;
         }
-
         GlobalLimits::instance().disable();
-
         {
             tbb::queuing_rw_mutex::scoped_lock lock;
             RateLimiter rate_limiter(0, 1, 1, 10000000L); // poll status every 10 ms or more
@@ -267,16 +256,16 @@ namespace silt {
                             ))
                             break;
                     }
+
                     lock.release();
                 }
 
                 rate_limiter.remove_tokens(1);
             }
         }
-
         GlobalLimits::instance().enable();
-
         struct timeval tv;
+
         if (gettimeofday(&tv, NULL))
             assert(false);
 
@@ -291,12 +280,13 @@ namespace silt {
                             static_cast<long long unsigned>(latencies_[stage][i]),
                             static_cast<long long unsigned>(counts_[stage][i]));
                 }
+
                 latencies_[stage][i] = 0;
                 counts_[stage][i] = 0;
             }
         }
-        fflush(stdout);
 
+        fflush(stdout);
         return OK;
     }
 
@@ -307,6 +297,7 @@ namespace silt {
             return ERROR;
 
         Silt_Return ret = Flush();
+
         if (ret != OK)
             return ret;
 
@@ -318,9 +309,7 @@ namespace silt {
         }
 
         all_stores_.clear();
-
         open_ = false;
-
         return OK;
     }
 
@@ -328,56 +317,65 @@ namespace silt {
     Silt_Combi::Destroy()
     {
         // TODO: implement
-
         return UNSUPPORTED;
     }
 
-	Silt_Return
-	Silt_Combi::Status(const Silt_StatusType& type, Value& status) const
-	{
+    Silt_Return
+    Silt_Combi::Status(const Silt_StatusType &type, Value &status) const
+    {
         if (!open_)
             return ERROR;
 
         tbb::queuing_rw_mutex::scoped_lock lock(mutex_, false);
-
         std::ostringstream oss;
+
         switch (type) {
-        case NUM_DATA:
-        case NUM_ACTIVE_DATA:
-        case MEMORY_USE:
-        case DISK_USE:
-            {
+            case NUM_DATA:
+            case NUM_ACTIVE_DATA:
+            case MEMORY_USE:
+            case DISK_USE: {
                 Value status_part;
                 oss << '[';
+
                 for (size_t stage = 0; stage < all_stores_.size(); stage++) {
                     if (stage != 0)
                         oss << ',';
+
                     oss << '[';
+
                     for (size_t i = 0; i < all_stores_[stage].size(); i++) {
                         if (i != 0)
                             oss << ',';
+
                         Silt_Return ret = all_stores_[stage][i]->Status(type, status_part);
+
                         if (ret != OK)
                             return UNSUPPORTED;
+
                         oss << status_part.str();
                     }
+
                     oss << ']';
                 }
+
                 oss << ']';
             }
             break;
-		case CAPACITY:
-            oss << -1;      // unlimited
-            break;
-        default:
-            return UNSUPPORTED;
+
+            case CAPACITY:
+                oss << -1;      // unlimited
+                break;
+
+            default:
+                return UNSUPPORTED;
         }
+
         status = NewValue(oss.str());
         return OK;
     }
 
     Silt_Return
-    Silt_Combi::Put(const ConstValue& key, const ConstValue& data)
+    Silt_Combi::Put(const ConstValue &key, const ConstValue &data)
     {
         if (!open_)
             return ERROR;
@@ -389,11 +387,12 @@ namespace silt {
             return INVALID_DATA;
 
         Silt_Return ret;
+
         while (true) {
             tbb::queuing_rw_mutex::scoped_lock lock(mutex_, false);
-            Silt* front_store = all_stores_[0][0];
-
+            Silt *front_store = all_stores_[0][0];
             ret = front_store->Put(key, data);
+
             if (ret != INSUFFICIENT_SPACE)
                 break;
 
@@ -404,17 +403,15 @@ namespace silt {
                 continue;
             }
 
-            Silt* new_store = alloc_store(0);
+            Silt *new_store = alloc_store(0);
             new_store->Create();
-
             all_stores_[0].insert(all_stores_[0].begin(), new_store);
 
             if (stage_limit_ >= 1 &&
                 !convert_task_running_ &&
                 all_stores_[0].size() >= store0_high_watermark_) {
                 convert_task_running_ = true;
-
-                ConvertTask* t = new ConvertTask();
+                ConvertTask *t = new ConvertTask();
                 t->silt = this;
                 task_scheduler_convert_.enqueue_task(t);
             }
@@ -424,7 +421,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Combi::Append(Value& key, const ConstValue& data)
+    Silt_Combi::Append(Value &key, const ConstValue &data)
     {
         if (!open_)
             return ERROR;
@@ -433,11 +430,12 @@ namespace silt {
             return INVALID_DATA;
 
         Silt_Return ret;
+
         while (true) {
             tbb::queuing_rw_mutex::scoped_lock lock(mutex_, false);
-            Silt* front_store = all_stores_[0][0];
-
+            Silt *front_store = all_stores_[0][0];
             ret = front_store->Append(key, data);
+
             if (ret != INSUFFICIENT_SPACE)
                 break;
 
@@ -448,17 +446,15 @@ namespace silt {
                 continue;
             }
 
-            Silt* new_store = alloc_store(0);
+            Silt *new_store = alloc_store(0);
             new_store->Create();
-
             all_stores_[0].insert(all_stores_[0].begin(), new_store);
 
             if (stage_limit_ >= 1 &&
                 !convert_task_running_ &&
                 all_stores_[0].size() >= store0_high_watermark_) {
                 convert_task_running_ = true;
-
-                ConvertTask* t = new ConvertTask();
+                ConvertTask *t = new ConvertTask();
                 t->silt = this;
                 task_scheduler_convert_.enqueue_task(t);
             }
@@ -468,14 +464,14 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Combi::Delete(const ConstValue& key)
+    Silt_Combi::Delete(const ConstValue &key)
     {
         if (key_len_ != key.size())
             return INVALID_KEY;
 
         tbb::queuing_rw_mutex::scoped_lock lock(mutex_, false); // Delete() does not change the all_stores_ structure
-
         Silt_Return ret = all_stores_[0][0]->Delete(key);
+
         if (ret == OK || ret == KEY_NOT_FOUND)
             return OK;
         else
@@ -483,7 +479,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Combi::Contains(const ConstValue& key) const
+    Silt_Combi::Contains(const ConstValue &key) const
     {
         if (key_len_ != key.size())
             return INVALID_KEY;
@@ -493,6 +489,7 @@ namespace silt {
         for (size_t stage = 0; stage < all_stores_.size(); stage++) {
             for (size_t i = 0; i < all_stores_[stage].size(); i++) {
                 Silt_Return ret = all_stores_[stage][i]->Contains(key);
+
                 if (ret != KEY_NOT_FOUND)
                     return ret;
             }
@@ -502,7 +499,7 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Combi::Length(const ConstValue& key, size_t& len) const
+    Silt_Combi::Length(const ConstValue &key, size_t &len) const
     {
         if (key_len_ != key.size())
             return INVALID_KEY;
@@ -512,6 +509,7 @@ namespace silt {
         for (size_t stage = 0; stage < all_stores_.size(); stage++) {
             for (size_t i = 0; i < all_stores_[stage].size(); i++) {
                 Silt_Return ret = all_stores_[stage][i]->Length(key, len);
+
                 if (ret != KEY_NOT_FOUND)
                     return ret;
             }
@@ -521,10 +519,9 @@ namespace silt {
     }
 
     Silt_Return
-    Silt_Combi::Get(const ConstValue& key, Value& data, size_t offset, size_t len) const
+    Silt_Combi::Get(const ConstValue &key, Value &data, size_t offset, size_t len) const
     {
         struct timespec ts;
-
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
         int64_t last_time = static_cast<int64_t>(ts.tv_sec) * 1000000000Lu + static_cast<int64_t>(ts.tv_nsec);
 
@@ -536,9 +533,11 @@ namespace silt {
         for (size_t stage = 0; stage < all_stores_.size(); stage++) {
             for (size_t i = 0; i < all_stores_[stage].size(); i++) {
                 Silt_Return ret = all_stores_[stage][i]->Get(key, data, offset, len);
+
                 if (ret != KEY_NOT_FOUND) {
                     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
                     int64_t current_time = static_cast<int64_t>(ts.tv_sec) * 1000000000Lu + static_cast<int64_t>(ts.tv_nsec);
+
                     if (stage < 3 && i < latency_track_store_count_) {
                         latencies_[stage][i] += current_time - last_time;
                         ++counts_[stage][i];
@@ -553,14 +552,13 @@ namespace silt {
         int64_t current_time = static_cast<int64_t>(ts.tv_sec) * 1000000000Lu + static_cast<int64_t>(ts.tv_nsec);
         latencies_[3][0] += current_time - last_time;
         ++counts_[3][0];
-
         return KEY_NOT_FOUND;
     }
 
     Silt_ConstIterator
     Silt_Combi::Enumerate() const
     {
-        IteratorElem* elem = new IteratorElem(this);
+        IteratorElem *elem = new IteratorElem(this);
         elem->current_stage = 0;
         elem->current_store = static_cast<size_t>(-1);
         elem->Next();
@@ -570,28 +568,24 @@ namespace silt {
     Silt_Iterator
     Silt_Combi::Enumerate()
     {
-        IteratorElem* elem = new IteratorElem(this);
+        IteratorElem *elem = new IteratorElem(this);
         elem->current_stage = 0;
         elem->current_store = static_cast<size_t>(-1);
         elem->Next();
         return Silt_Iterator(elem);
     }
 
-    Silt*
+    Silt *
     Silt_Combi::alloc_store(size_t stage, size_t size)
     {
         char buf[1024];
         snprintf(buf, sizeof(buf), "%zu", stage);
-
-        Configuration* config = new Configuration(config_, true);
+        Configuration *config = new Configuration(config_, true);
         config->SetContextNode(std::string("child::store") + buf);
-
         snprintf(buf, sizeof(buf), "%s_%zu", config_->GetStringValue("child::id").c_str(), next_ids_[stage]++);
         config->SetStringValue("child::id", buf);
-
         snprintf(buf, sizeof(buf), "%zu", key_len_);
         config->SetStringValue("child::key-len", buf);
-
         snprintf(buf, sizeof(buf), "%zu", data_len_);
         config->SetStringValue("child::data-len", buf);
 
@@ -600,11 +594,13 @@ namespace silt {
             config->SetStringValue("child::size", buf);
         }
 
-        Silt* store = Silt_Factory::New(config);
+        Silt *store = Silt_Factory::New(config);
+
         if (store == NULL) {
             DPRINTF(2, "failed to allocate new store\n");
             delete config;
         }
+
         return store;
     }
 
@@ -612,23 +608,16 @@ namespace silt {
     Silt_Combi::ConvertTask::Run()
     {
         //fprintf(stderr, "Silt_Combi::ConvertTask::Run(): converting\n");
-
-        Silt* front_store;
-        Silt* middle_store;
-
+        Silt *front_store;
+        Silt *middle_store;
         //fprintf(stderr, "Silt_Combi::ConvertTask::Run(): 1\n");
-
         // get the front store
         {
             tbb::queuing_rw_mutex::scoped_lock lock(silt->mutex_, false);
-
             assert(silt->all_stores_[0].size() > silt->store0_low_watermark_);
-
             front_store = silt->all_stores_[0].back();
         }
-
         //fprintf(stderr, "Silt_Combi::ConvertTask::Run(): 2\n");
-
         // convert to the middle store
         {
             Value status;
@@ -637,13 +626,10 @@ namespace silt {
             //size_t expected_IO = (silt->key_len_ + silt->data_len_) * atoll(status.str().c_str());
             middle_store = convert(front_store);
         }
-
         //fprintf(stderr, "Silt_Combi::ConvertTask::Run(): 3\n");
-
         // remove the front store and insert the middle store
         {
             tbb::queuing_rw_mutex::scoped_lock lock(silt->mutex_, true);
-
             //fprintf(stderr, "Silt_Combi::ConvertTask::Run(): 4\n");
             silt->all_stores_[0].pop_back();
             silt->all_stores_[1].insert(silt->all_stores_[1].begin(), middle_store);
@@ -653,62 +639,57 @@ namespace silt {
                 !silt->merge_task_running_ &&
                 silt->all_stores_[1].size() >= silt->store1_high_watermark_) {
                 silt->merge_task_running_ = true;
-
-                MergeTask* t = new MergeTask();
+                MergeTask *t = new MergeTask();
                 t->silt = silt;
                 silt->task_scheduler_merge_.enqueue_task(t);
             }
         }
-
         // destroy the front store
         {
             front_store->Close();
             front_store->Destroy();
             delete front_store;
         }
-
         {
             tbb::queuing_rw_mutex::scoped_lock lock(silt->mutex_, true);
 
             if (silt->all_stores_[0].size() > silt->store0_low_watermark_) {
                 // requeue
-                ConvertTask* t = new ConvertTask();
+                ConvertTask *t = new ConvertTask();
                 t->silt = silt;
                 silt->task_scheduler_convert_.enqueue_task(t);
-            }
-            else {
+            } else {
                 // no more store to convert
                 assert(silt->convert_task_running_);
                 silt->convert_task_running_ = false;
             }
         }
-
         //fprintf(stderr, "Silt_Combi::ConvertTask::Run(): converting done\n");
     }
 
-    Silt*
-    Silt_Combi::ConvertTask::convert(Silt* front_store)
+    Silt *
+    Silt_Combi::ConvertTask::convert(Silt *front_store)
     {
         {
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
 
             Value status;
             front_store->Status(NUM_ACTIVE_DATA, status);
-
             fprintf(stdout, "%llu.%06llu: (%s) conversion started: %s from front store\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     silt->id_.c_str(),
                     status.str().c_str()
-                );
+                   );
             fflush(stdout);
         }
-
         // locking for alloc_store is unnecessary because there is only one thread that modifies the specific value
-        Silt* middle_store = silt->alloc_store(1);
+        Silt *middle_store = silt->alloc_store(1);
+
         if (middle_store->Create() != OK) {
             fprintf(stderr, "Error while creating a middle store\n");
             assert(false);
@@ -718,25 +699,23 @@ namespace silt {
 
         Silt_Return ret = front_store->ConvertTo(middle_store);
         assert(ret == OK);
-
         {
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
 
             Value status;
             middle_store->Status(NUM_ACTIVE_DATA, status);
-
             fprintf(stdout, "%llu.%06llu: (%s) conversion finished: %s entries to middle store\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     silt->id_.c_str(),
                     status.str().c_str()
-                );
+                   );
             fflush(stdout);
         }
-
         return middle_store;
     }
 
@@ -744,51 +723,50 @@ namespace silt {
     Silt_Combi::MergeTask::Run()
     {
         //fprintf(stderr, "Silt_Combi::MergeTask::Run(): merging\n");
-
         // check if there is an enough number of middle stores to merge
         {
             tbb::queuing_rw_mutex::scoped_lock lock(silt->mutex_, false);
-
             assert(silt->all_stores_[1].size() > silt->store1_low_watermark_);
         }
-
         {
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
+
             fprintf(stdout, "%llu.%06llu: (%s) merge started\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     silt->id_.c_str()
-                );
+                   );
             fflush(stdout);
         }
-
         size_t num_adds = 0;
         size_t num_dels = 0;
-
         // sort all available middle stores
-        Silt* sorter = NULL;
+        Silt *sorter = NULL;
         size_t sorted_middle_stores = 0;
+
         while (true) {
-            Silt* middle_store_to_sort;
+            Silt *middle_store_to_sort;
             {
                 tbb::queuing_rw_mutex::scoped_lock lock(silt->mutex_, false);
+
                 if (sorted_middle_stores + silt->store1_low_watermark_ >= silt->all_stores_[1].size()) {
                     // no more middle store to sort
                     break;
                 }
+
                 size_t idx = silt->all_stores_[1].size() - 1 - sorted_middle_stores;
                 middle_store_to_sort = silt->all_stores_[1][idx];
             }
             sorted_middle_stores++;
-
             sorter = sort(sorter, middle_store_to_sort, num_adds, num_dels);
         }
 
         // obtain the back store
-        Silt* back_store;
+        Silt *back_store;
         {
             // don't need to obtain read lock because the current thread is the only thread that can modify silt->all_stores_[2]
             if (silt->all_stores_[2].size() == 0)
@@ -800,15 +778,13 @@ namespace silt {
                 return;
             }
         }
-
         // merge the sorted middle stores into the back store
-        Silt* new_back_store;
+        Silt *new_back_store;
         {
             new_back_store = merge(back_store, sorter, num_adds, num_dels);
         }
-
         // remove the middle stores and replace the back store
-        std::vector<Silt*> removed_middle_stores;
+        std::vector<Silt *> removed_middle_stores;
         {
             tbb::queuing_rw_mutex::scoped_lock lock(silt->mutex_, true);
 
@@ -820,7 +796,6 @@ namespace silt {
             silt->all_stores_[2].clear();
             silt->all_stores_[2].push_back(new_back_store);
         }
-
         // destroy middle stores and the back store
         {
             for (size_t i = 0; i < sorted_middle_stores; i++) {
@@ -828,6 +803,7 @@ namespace silt {
                 removed_middle_stores[i]->Destroy();
                 delete removed_middle_stores[i];
             }
+
             removed_middle_stores.clear();
 
             if (back_store) {
@@ -837,76 +813,82 @@ namespace silt {
                 back_store = NULL;
             }
         }
-
         {
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
+
             fprintf(stdout, "%llu.%06llu: (%s) merge finished: %zu entries to back store, %zu entries deleted\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     silt->id_.c_str(),
                     num_adds,
                     num_dels
-                );
+                   );
             fflush(stdout);
         }
-
         {
             tbb::queuing_rw_mutex::scoped_lock lock(silt->mutex_, true);
+
             if (silt->all_stores_[1].size() > silt->store1_low_watermark_) {
                 // requeue
-                MergeTask* t = new MergeTask();
+                MergeTask *t = new MergeTask();
                 t->silt = silt;
                 silt->task_scheduler_merge_.enqueue_task(t);
-            }
-            else {
+            } else {
                 // no more store to merge
                 assert(silt->merge_task_running_);
                 silt->merge_task_running_ = false;
             }
         }
-
         //fprintf(stderr, "Silt_Combi::MergeTask::Run(): merging done\n");
     }
 
-    Silt*
-    Silt_Combi::MergeTask::sort(Silt* sorter, Silt* middle_store, size_t& num_adds, size_t& num_dels)
+    Silt *
+    Silt_Combi::MergeTask::sort(Silt *sorter, Silt *middle_store, size_t &num_adds, size_t &num_dels)
     {
         if (sorter == NULL) {
-            Configuration* sorter_config = new Configuration();
-
+            Configuration *sorter_config = new Configuration();
             char buf[1024];
 
             if (sorter_config->CreateNodeAndAppend("type", ".") != 0)
                 assert(false);
+
             if (sorter_config->SetStringValue("type", "sorter") != 0)
                 assert(false);
 
             if (sorter_config->CreateNodeAndAppend("key-len", ".") != 0)
                 assert(false);
+
             snprintf(buf, sizeof(buf), "%zu", silt->key_len_);
+
             if (sorter_config->SetStringValue("key-len", buf) != 0)
                 assert(false);
 
             if (sorter_config->CreateNodeAndAppend("data-len", ".") != 0)
                 assert(false);
+
             snprintf(buf, sizeof(buf), "%zu", 1 + silt->data_len_);
+
             if (sorter_config->SetStringValue("data-len", buf) != 0)
                 assert(false);
 
             if (sorter_config->CreateNodeAndAppend("temp-file", ".") != 0)
                 assert(false);
+
             if (sorter_config->SetStringValue("temp-file", silt->temp_file_) != 0)
                 assert(false);
 
             sorter = Silt_Factory::New(sorter_config);
+
             if (!sorter) {
                 assert(false);
                 delete sorter_config;
                 return NULL;
             }
+
             if (sorter->Create() != OK) {
                 assert(false);
                 delete sorter;
@@ -915,6 +897,7 @@ namespace silt {
         }
 
         Silt_ConstIterator it = middle_store->Enumerate();
+
         while (!it.IsEnd()) {
             Value combined_data;
             combined_data.resize(1 + silt->data_len_);
@@ -938,39 +921,41 @@ namespace silt {
 
         {
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
+
             fprintf(stdout, "%llu.%06llu: (%s) sorting: added more unsorted entries (currently %zu entries to add, %zu entries to delete)\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     silt->id_.c_str(),
                     num_adds,
                     num_dels
-                );
+                   );
             fflush(stdout);
         }
 
         return sorter;
     }
 
-    Silt*
-    Silt_Combi::MergeTask::merge(Silt* back_store, Silt* sorter, size_t& num_adds, size_t& num_dels)
+    Silt *
+    Silt_Combi::MergeTask::merge(Silt *back_store, Silt *sorter, size_t &num_adds, size_t &num_dels)
     {
         DPRINTF(2, "Silt_Combi::MergeTask::Merge(): sorting middle store entries\n");
-
         //fprintf(stderr, "Silt_Combi::MergeTask::Merge(): %zu entries found in middle stores\n", num_adds + num_dels);
-
         {
             struct timeval tv;
+
             if (gettimeofday(&tv, NULL)) {
                 perror("Error while getting the current time");
             }
+
             fprintf(stdout, "%llu.%06llu: (%s) sorting: stopped adding unsorted entries\n",
                     static_cast<long long unsigned>(tv.tv_sec),
                     static_cast<long long unsigned>(tv.tv_usec),
                     silt->id_.c_str()
-                );
+                   );
             fflush(stdout);
         }
 
@@ -981,18 +966,19 @@ namespace silt {
         }
 
         DPRINTF(2, "Silt_Combi::MergeTask::Merge(): merging sorted entries into the back store with duplicate entry supression\n");
-
         // note that this is just a guess, not an accurate estimate.
         // the actual size can vary if there are many updates or duplicate deletions.
         ssize_t estimated_new_back_store_size = static_cast<ssize_t>(silt->back_store_size_) + static_cast<ssize_t>(num_adds) - static_cast<ssize_t>(num_dels);
         size_t max_new_back_store_size;
+
         if (estimated_new_back_store_size <= 0)
             max_new_back_store_size = 0;
         else
             max_new_back_store_size = estimated_new_back_store_size;
 
         // locking for alloc_store is unnecessary because there is only one thread that modifies the specific value
-        Silt* new_back_store = silt->alloc_store(2, max_new_back_store_size);
+        Silt *new_back_store = silt->alloc_store(2, max_new_back_store_size);
+
         if (new_back_store->Create() != OK) {
             fprintf(stderr, "Error while creating a back store\n");
             assert(false);
@@ -1003,28 +989,29 @@ namespace silt {
 
         num_adds = 0;
         num_dels = 0;
-
         bool first = true;
-
         {
             Silt_ConstIterator it_b;
+
             if (back_store)
-               it_b = back_store->Enumerate();
+                it_b = back_store->Enumerate();
+
             Silt_ConstIterator it_m = sorter->Enumerate();
 
             if (first) {
                 first = false;
-
                 {
                     struct timeval tv;
+
                     if (gettimeofday(&tv, NULL)) {
                         perror("Error while getting the current time");
                     }
+
                     fprintf(stdout, "%llu.%06llu: (%s) sorting: started retrieving sorted entries\n",
                             static_cast<long long unsigned>(tv.tv_sec),
                             static_cast<long long unsigned>(tv.tv_usec),
                             silt->id_.c_str()
-                        );
+                           );
                     fflush(stdout);
                 }
             }
@@ -1035,6 +1022,7 @@ namespace silt {
                 if (!it_m.IsEnd()) {
                     if (!it_b.IsEnd()) {
                         int cmp = it_m->key.compare(it_b->key);
+
                         if (cmp < 0)
                             select_middle_store = true;
                         else if (cmp == 0) {
@@ -1044,14 +1032,11 @@ namespace silt {
                             GlobalLimits::instance().remove_merge_tokens(1);
                             ++it_b;
                             num_dels++;
-                        }
-                        else
+                        } else
                             select_middle_store = false;
-                    }
-                    else
+                    } else
                         select_middle_store = true;
-                }
-                else {
+                } else {
                     if (!it_b.IsEnd())
                         select_middle_store = false;
                     else
@@ -1066,6 +1051,7 @@ namespace silt {
                     while (true) {
                         key = it_m->key;
                         deleted = it_m->data.data()[0] == 1;
+
                         if (!deleted)
                             data = NewValue(it_m->data.data() + 1, silt->data_len_);
                         else
@@ -1087,12 +1073,10 @@ namespace silt {
                             //    fprintf(stderr, "non-dup data!\n");
                             num_dels++;
                             continue;
-                        }
-                        else
+                        } else
                             break;
                     }
-                }
-                else {
+                } else {
                     // the back store is assumed to have no duplicate entry
                     key = it_b->key;
                     data = it_b->data;
@@ -1105,27 +1089,20 @@ namespace silt {
                     Silt_Return ret = new_back_store->Put(key, data);
                     assert(ret == OK);
                     num_adds++;
-                }
-                else
+                } else
                     num_dels++;
             }
         }
-
         delete sorter;
         sorter = NULL;
-
         //fprintf(stderr, "Silt_Combi::MergeTask::Merge(): %zu keys kept, %zu keys deleted\n", num_adds, num_dels);
-
         DPRINTF(2, "Silt_Combi::MergeTask::Merge(): flushing\n");
-
         new_back_store->Flush();
-
         silt->back_store_size_ = num_adds;
-
         return new_back_store;
     }
 
-    Silt_Combi::IteratorElem::IteratorElem(const Silt_Combi* silt)
+    Silt_Combi::IteratorElem::IteratorElem(const Silt_Combi *silt)
     {
         this->silt = silt;
         lock = new tbb::queuing_rw_mutex::scoped_lock(silt->mutex_, false);
@@ -1137,11 +1114,11 @@ namespace silt {
         lock = NULL;
     }
 
-    Silt_IteratorElem*
+    Silt_IteratorElem *
     Silt_Combi::IteratorElem::Clone() const
     {
-        IteratorElem* elem = new IteratorElem(static_cast<const Silt_Combi*>(silt));
-        tbb::queuing_rw_mutex::scoped_lock* elem_lock = elem->lock;
+        IteratorElem *elem = new IteratorElem(static_cast<const Silt_Combi *>(silt));
+        tbb::queuing_rw_mutex::scoped_lock *elem_lock = elem->lock;
         *elem = *this;
         elem->lock = elem_lock;
         return elem;
@@ -1150,7 +1127,7 @@ namespace silt {
     void
     Silt_Combi::IteratorElem::Next()
     {
-        const Silt_Combi* silt_combi = static_cast<const Silt_Combi*>(silt);
+        const Silt_Combi *silt_combi = static_cast<const Silt_Combi *>(silt);
 
         if (!store_it.IsEnd()) {
             ++store_it;
@@ -1169,8 +1146,7 @@ namespace silt {
                     current_stage++;
                     fprintf(stderr, "Silt_Combi::IteratorElem::Next(): enumerating stage %zu\n", current_stage);
                     current_store = 0;
-                }
-                else
+                } else
                     break;
             }
 
