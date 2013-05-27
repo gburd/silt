@@ -1,1 +1,10 @@
-{"silt":{"type":["monitor","bdb"],"id":0,"file":"./testFiles/bdb"}}
+{
+    "silt": {
+        "file": "./silt.db/bdb",
+        "id": 0,
+        "type": [
+            "monitor",
+            "bdb"
+        ]
+    }
+}

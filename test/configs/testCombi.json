@@ -1,1 +1,70 @@
-{"silt":{"type":["monitor","combi"],"id":0,"key-len":20,"data-len":100,"size":1000000,"store0":{"type":"sf","id":{},"key-len":{},"data-len":{},"file":"./testFiles/front_file_header","hashtable":{"type":"cuckoo","id":{},"file":"./testFiles/front_hashtable","hash-table-size":131072},"datastore":{"type":"file","id":{},"data-len":{},"use-buffered-io-only":1,"file":"./testFiles/front_datastore"}},"store1":{"type":"sf","id":{},"key-len":{},"data-len":{},"file":"./testFiles/middle_file_header","hashtable":{"type":"cuckoo","id":{},"file":"./testFiles/middle_hashtable","hash-table-size":131072,"use-offset":0},"datastore":{"type":"file","id":{},"data-len":{},"use-buffered-io-only":1,"file":"./testFiles/middle_datastore"}},"store2":{"type":"sf_ordered_trie","id":{},"key-len":{},"data-len":{},"keys-per-block":1,"size":{},"bucket-size":128,"skip-bits":0,"datastore":{"type":"file","id":{},"data-len":{},"use-buffered-io-only":1,"file":"./testFiles/back_datastore"}}}}
+{
+    "silt": {
+        "data-len": 100,
+        "id": 0,
+        "key-len": 20,
+        "size": 1000000,
+        "store0": {
+            "data-len": {},
+            "datastore": {
+                "data-len": {},
+                "file": "./silt.db/front_datastore",
+                "id": {},
+                "type": "file",
+                "use-buffered-io-only": 1
+            },
+            "file": "./silt.db/front_file_header",
+            "hashtable": {
+                "file": "./silt.db/front_hashtable",
+                "hash-table-size": 131072,
+                "id": {},
+                "type": "cuckoo"
+            },
+            "id": {},
+            "key-len": {},
+            "type": "sf"
+        },
+        "store1": {
+            "data-len": {},
+            "datastore": {
+                "data-len": {},
+                "file": "./silt.db/middle_datastore",
+                "id": {},
+                "type": "file",
+                "use-buffered-io-only": 1
+            },
+            "file": "./silt.db/middle_file_header",
+            "hashtable": {
+                "file": "./silt.db/middle_hashtable",
+                "hash-table-size": 131072,
+                "id": {},
+                "type": "cuckoo",
+                "use-offset": 0
+            },
+            "id": {},
+            "key-len": {},
+            "type": "sf"
+        },
+        "store2": {
+            "bucket-size": 128,
+            "data-len": {},
+            "datastore": {
+                "data-len": {},
+                "file": "./silt.db/back_datastore",
+                "id": {},
+                "type": "file",
+                "use-buffered-io-only": 1
+            },
+            "id": {},
+            "key-len": {},
+            "keys-per-block": 1,
+            "size": {},
+            "skip-bits": 0,
+            "type": "sf_ordered_trie"
+        },
+        "type": [
+            "monitor",
+            "combi"
+        ]
+    }
+}

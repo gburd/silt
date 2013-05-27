@@ -1,1 +1,34 @@
-{"silt":{"type":["monitor","partition"],"id":0,"skip-bits":0,"partitions":4,"include":{"file":"exp_d.xml","src":"child::store","dest":"."},"set":[{"node":"child::store/store0/hashtable/hash-table-size","value":131072},{"node":"child::store/store1/hashtable/hash-table-size","value":131072},{"node":"child::store/store2/skip-bits","value":2},{"node":"child::store/store1-high-watermark","value":1}]}}
+{
+    "silt": {
+        "id": 0,
+        "include": {
+            "dest": ".",
+            "file": "exp_d.json",
+            "src": "child::store"
+        },
+        "partitions": 4,
+        "set": [
+            {
+                "node": "child::store/store0/hashtable/hash-table-size",
+                "value": 131072
+            },
+            {
+                "node": "child::store/store1/hashtable/hash-table-size",
+                "value": 131072
+            },
+            {
+                "node": "child::store/store2/skip-bits",
+                "value": 2
+            },
+            {
+                "node": "child::store/store1-high-watermark",
+                "value": 1
+            }
+        ],
+        "skip-bits": 0,
+        "type": [
+            "monitor",
+            "partition"
+        ]
+    }
+}

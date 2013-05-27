@@ -1,1 +1,31 @@
-{"silt":{"store":{"type":"combi","id":{},"key-len":20,"data-len":1000,"temp-file":"./tmp/","stage-limit":2,"store1-high-watermark":1,"store1-low-watermark":0},"include":[{"file":"exp_common.xml","src":"child::store0","dest":"child::store"},{"file":"exp_common.xml","src":"child::store1","dest":"child::store"},{"file":"exp_common.xml","src":"child::store2","dest":"child::store"}]}}
+{
+    "silt": {
+        "include": [
+            {
+                "dest": "child::store",
+                "file": "exp_common.json",
+                "src": "child::store0"
+            },
+            {
+                "dest": "child::store",
+                "file": "exp_common.json",
+                "src": "child::store1"
+            },
+            {
+                "dest": "child::store",
+                "file": "exp_common.json",
+                "src": "child::store2"
+            }
+        ],
+        "store": {
+            "data-len": 1000,
+            "id": {},
+            "key-len": 20,
+            "stage-limit": 2,
+            "store1-high-watermark": 1,
+            "store1-low-watermark": 0,
+            "temp-file": "./silt.db/tmp/",
+            "type": "combi"
+        }
+    }
+}

@@ -1,1 +1,12 @@
-{"silt":{"key-len":20,"size":131072,"cuckoo":{"type":"cuckoo","id":0,"file":"./testFiles/hashtable","hash-table-size":131072}}}
+{
+    "silt": {
+        "cuckoo": {
+            "file": "./silt.db/hashtable",
+            "hash-table-size": 131072,
+            "id": 0,
+            "type": "cuckoo"
+        },
+        "key-len": 20,
+        "size": 131072
+    }
+}

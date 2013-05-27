@@ -1,1 +1,20 @@
-{"silt":{"type":"sf","id":0,"file":"./testFiles/file_header","hashtable":{"type":"default","id":{},"file":"./testFiles/hashtable","hash-table-size":1048576},"datastore":{"type":"file","id":{},"data-len":{},"use-buffered-io-only":1,"file":"./testFiles/datastore"}}}
+{
+    "silt": {
+        "datastore": {
+            "data-len": {},
+            "file": "./silt.db/datastore",
+            "id": {},
+            "type": "file",
+            "use-buffered-io-only": 1
+        },
+        "file": "./silt.db/file_header",
+        "hashtable": {
+            "file": "./silt.db/hashtable",
+            "hash-table-size": 1048576,
+            "id": {},
+            "type": "default"
+        },
+        "id": 0,
+        "type": "sf"
+    }
+}

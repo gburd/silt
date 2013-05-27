@@ -1,1 +1,13 @@
-{"silt":{"include":{"file":"exp_dis.xml","src":"child::store","dest":"."},"set":{"node":"child::store/stage-limit","value":1}}}
+{
+    "silt": {
+        "include": {
+            "dest": ".",
+            "file": "exp_dis.json",
+            "src": "child::store"
+        },
+        "set": {
+            "node": "child::store/stage-limit",
+            "value": 1
+        }
+    }
+}

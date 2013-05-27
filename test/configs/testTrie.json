@@ -1,1 +1,19 @@
-{"silt":{"type":"sf_ordered_trie","id":0,"key-len":20,"data-len":12,"keys-per-block":1,"size":10000,"bucket-size":512,"skip-bits":0,"datastore":{"type":"file","id":{},"data-len":{},"use-buffered-io-only":1,"file":"./testFiles/datastore"}}}
+{
+    "silt": {
+        "bucket-size": 512,
+        "data-len": 12,
+        "datastore": {
+            "data-len": {},
+            "file": "./silt.db/datastore",
+            "id": {},
+            "type": "file",
+            "use-buffered-io-only": 1
+        },
+        "id": 0,
+        "key-len": 20,
+        "keys-per-block": 1,
+        "size": 10000,
+        "skip-bits": 0,
+        "type": "sf_ordered_trie"
+    }
+}
