@@ -96,7 +96,7 @@ print_hex(const char* s, int len)
 
 using namespace silt;
 
-static std::string conf_file = "testConfigs/exp_benchCuckoo.xml";
+static std::string conf_file = "configs/exp_benchCuckoo.xml";
 
 void benchmark(std::string name)
 {

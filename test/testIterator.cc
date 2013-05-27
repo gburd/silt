@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 {
     printf("Start testIterator!\n");
     int max = 100;
-    string config_file = "./testConfigs/testIterator.xml";
+    string config_file = "./configs/testIterator.xml";
     DPRINTF(2, "TestIterator: Will create Silt now!\n");
     Silt* db = Silt_Factory::New(config_file);
     db->Create();

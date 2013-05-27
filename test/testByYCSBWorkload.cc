@@ -259,7 +259,7 @@ void replay(string recfile) {
 
 void usage() {
     cout << "usage: testByYCSBWorkload conf_file load_workload_name trans_workload_name [-t num_threads] [-r max_ops_per_sec] [-c convert_rate] [-m merge_rate] [-s successful_get_ratio]" << endl
-         << "e.g. ./testByYCSBWorkload testConfigs/bdb.xml testWorkloads/update_only" << endl;
+         << "e.g. ./testByYCSBWorkload configs/bdb.xml workloads/update_only" << endl;
 
 }
 

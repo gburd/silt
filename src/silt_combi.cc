@@ -632,11 +632,9 @@ namespace silt {
         // convert to the middle store
         {
             Value status;
-            size_t num_data = 0;
-            if (front_store->Status(NUM_DATA, status) == OK)
-                num_data = atoll(status.str().c_str());
-            //size_t expected_IO = (silt->key_len_ + silt->data_len_) * num_data;
-
+            front_store->Status(NUM_DATA, status);
+            // TODO: if (front_store->Status(NUM_DATA, status) == OK)
+            //size_t expected_IO = (silt->key_len_ + silt->data_len_) * atoll(status.str().c_str());
             middle_store = convert(front_store);
         }
 

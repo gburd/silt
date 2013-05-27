@@ -53,6 +53,11 @@
 
 namespace silt {
 
+    const double HashTableDefault::EXCESS_BUCKET_FACTOR = 1.1;
+    const double HashTableDefault::MAX_DELETED_RATIO = 0.8;
+    const double HashTableDefault::MAX_LOAD_FACTOR = 0.9;
+    const double HashTableDefault::PROBES_BEFORE_REHASH = 8;
+
     HashTableDefault::HashTableDefault()
         : hash_table_(NULL), hash_table_size_(0), c_1_(1.), c_2_(0.)
     {

@@ -39,7 +39,6 @@
  * software in accordance with the terms specified in this license.
  */
 
-using namespace std;
 #include <iostream>
 #include <iomanip>
 #include "dbid.h"

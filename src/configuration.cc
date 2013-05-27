@@ -151,7 +151,6 @@ namespace silt {
 
             DOMXPathResult* source_xpath_result = subconfig->getXPathResult(source_gXPathExpression);
             DOMXPathResult* dest_xpath_result = this->getXPathResult(dest_gXPathExpression);
-            bool errorsOccured = false;
             if (source_xpath_result != NULL && dest_xpath_result!= NULL) {
                 try {
                     DOMNode* source_node = source_xpath_result->getNodeValue();
@@ -162,13 +161,10 @@ namespace silt {
                     XERCES_STD_QUALIFIER cerr << "Configuration: CloneAndAppendNode: An error occurred during XML node value retrieval. Msg is:"
                                               << XERCES_STD_QUALIFIER endl
                                               << StrX(e.getMessage()) << XERCES_STD_QUALIFIER endl;
-                    errorsOccured = true;
                 }
 
                 source_xpath_result->release();
                 dest_xpath_result->release();
-            } else {
-                errorsOccured = true;
             }
 
             delete subconfig;

@@ -33,7 +33,7 @@ function generate_trans {
 if [ $# -ne 1 ] 
 then 
     echo "Usage: $0 [path-to-YSCB]"
-    echo "	e.g. $0 /Users/binfan/projects/fawn/YCSB"
+    echo "	e.g. $0 /Users/binfan/projects/silt/YCSB"
     exit 1
 fi
 

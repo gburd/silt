@@ -53,7 +53,7 @@ print_hex(const char* s, int len)
 
 namespace silt
 {
-	static std::string conf_file = "testConfigs/testCombi.xml";
+	static std::string conf_file = "configs/testCombi.xml";
 
     class Silt_Combi_Test : public testing::Test
     {

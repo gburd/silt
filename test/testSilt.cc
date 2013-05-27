@@ -14,8 +14,8 @@ namespace silt {
         // Code here will be called immediately after the constructor (right before
         // each test).
         virtual void SetUp() {
-            //h = Silt_Factory::Create_Silt("./testConfigs/testSilt.xml"); // test_num_records_
-            h = Silt_Factory::New("./testConfigs/testSilt.xml"); // test_num_records_
+            //h = Silt_Factory::Create_Silt("./configs/testSilt.xml"); // test_num_records_
+            h = Silt_Factory::New("./configs/testSilt.xml"); // test_num_records_
             h->Create();
             //h2 = Silt_Factory::Create_Silt("/localfs/silt_db2", num_records_);
         }

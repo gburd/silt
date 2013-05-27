@@ -97,7 +97,7 @@ AC_CHECK_FUNCS([\
 	strtoull \
 	])
 
-CFLAGS="$CFLAGS -Wall -Wextra"
+CFLAGS="$CFLAGS -Wall -Wextra" # -Werror
 CXXFLAGS="$CFLAGS"
 
 AC_CONFIG_FILES([ Makefile

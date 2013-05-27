@@ -165,14 +165,15 @@ namespace silt {
 
         {
             if (this_worker->owner->cpu_priority_ == CPU_LOW) {
-                int new_nice = nice(1);
+                nice(1);
+                // TODO: log int new_nice = nice(1);
                 //fprintf(stderr, "set nice() = %d\n", new_nice);
             }
         }
 
         {
             // from Documentation/block/ioprio.txt
-            int ioprio = 4;
+            unsigned int ioprio = 4;
             int ioprio_class = IOPRIO_CLASS_BE;
 
             switch (this_worker->owner->io_priority_) {

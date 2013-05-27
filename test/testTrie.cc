@@ -94,7 +94,7 @@ print_hex(const char* s, int len)
 
 namespace silt
 {
-	static std::string conf_file = "testConfigs/testTrie.xml";
+	static std::string conf_file = "configs/testTrie.xml";
 
     class Silt_SF_Ordered_Trie_Test : public testing::Test
     {

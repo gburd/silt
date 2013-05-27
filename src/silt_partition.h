@@ -106,7 +106,7 @@ namespace silt {
 
         std::vector<Silt*> stores_;
 
-        friend class IteratorElem;
+        friend struct IteratorElem;
     };
 
 } // namespace silt

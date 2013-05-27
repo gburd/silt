@@ -76,22 +76,19 @@ class HashTableCuckoo : public Silt {
 
     static const uint32_t NUMVICTIM = 2; // size of victim table
     static const uint32_t MAX_CUCKOO_COUNT = 128;
-    /*
-     * make sure KEYFRAGBITS + VALIDBITS <= 16
-     */
-    static const uint32_t KEYFRAGBITS = 15;
-    static const uint32_t KEYFRAGMASK = (1 << KEYFRAGBITS) - 1;
-    static const uint32_t VALIDBITMASK = KEYFRAGMASK + 1;
-    static const uint32_t KEYPRESENTMASK =  VALIDBITMASK | KEYFRAGMASK;
+    static const uint32_t KEYFRAGBITS = 15; // KEYFRAGBITS + VALIDBITS must be <= 16
+    static const uint16_t KEYFRAGMASK = (1 << KEYFRAGBITS) - 1;
+    static const uint16_t VALIDBITMASK = KEYFRAGMASK + 1;
+    static const uint16_t KEYPRESENTMASK =  VALIDBITMASK | KEYFRAGMASK;
 
 protected:
     struct TagValStoreEntry {
-        char     tag_vector[ASSOCIATIVITY * ( KEYFRAGBITS + 1) / 8];
+        uint8_t  tag_vector[ASSOCIATIVITY * ( KEYFRAGBITS + 1) / 8];
         uint32_t val_vector[ASSOCIATIVITY];
     } __attribute__((__packed__));
 
     struct TagStoreEntry {
-        char     tag_vector[ASSOCIATIVITY * ( KEYFRAGBITS + 1) / 8];
+        uint8_t  tag_vector[ASSOCIATIVITY * ( KEYFRAGBITS + 1) / 8];
     } __attribute__((__packed__));
 
 public:
@@ -151,21 +148,16 @@ private:
     inline bool valid(uint32_t index, uint32_t way) const {
         uint32_t pos = way * (KEYFRAGBITS + 1);
         uint32_t offset = pos >> 3;
-        uint32_t tmp;
-        // this is not big-endian safe, and it accesses beyond the end of the table
-        /*
-        if (hash_table_)
-           tmp = *((uint32_t *) (hash_table_[index].tag_vector + offset));
-        else
-           tmp = *((uint32_t *) (fpf_table_[index].tag_vector + offset));
-        tmp = tmp >> (pos & 7);
-        */
-        // specialized code
+        uint16_t tmp = 0;
+
         assert(KEYFRAGBITS == 15);
-        if (hash_table_)
-            tmp = *((uint16_t *) (hash_table_[index].tag_vector + offset));
-        else
-            tmp = *((uint16_t *) (fpf_table_[index].tag_vector + offset));
+        if (hash_table_) {
+            uint16_t *p= (uint16_t *) (hash_table_[index].tag_vector + offset);
+            tmp = *p;
+        } else {
+            uint16_t *p= (uint16_t *) (fpf_table_[index].tag_vector + offset);
+            tmp = *p;
+        }
         return (tmp & VALIDBITMASK);
     }
 
@@ -173,21 +165,16 @@ private:
     inline uint32_t tag(uint32_t index, uint32_t way) const {
         uint32_t pos = way * (KEYFRAGBITS + 1);
         uint32_t offset = pos >> 3;
-        uint32_t tmp;
-        // this is not big-endian safe, and it accesses beyond the end of the table
-        /*
-        if (hash_table_)
-            tmp = *((uint32_t *) (hash_table_[index].tag_vector + offset));
-        else
-            tmp = *((uint32_t *) (fpf_table_[index].tag_vector + offset));
-        tmp = tmp >> (pos & 7);
-        */
-        // specialized code
+        uint16_t tmp = 0;
+
         assert(KEYFRAGBITS == 15);
-        if (hash_table_)
-            tmp = *((uint16_t *) (hash_table_[index].tag_vector + offset));
-        else
-            tmp = *((uint16_t *) (fpf_table_[index].tag_vector + offset));
+        if (hash_table_) {
+            uint16_t *p= (uint16_t *) (hash_table_[index].tag_vector + offset);
+            tmp = *p;
+        } else {
+            uint16_t *p= (uint16_t *) (fpf_table_[index].tag_vector + offset);
+            tmp = *p;
+        }
         return (tmp & KEYFRAGMASK);
     }
 
@@ -205,21 +192,15 @@ private:
         uint32_t pos = way * (KEYFRAGBITS + 1);
         uint32_t offset = pos >> 3;
         uint32_t shift = pos & 7;
-        // this is not big-endian safe, and it accesses beyond the end of the table
-        /*
-        uint32_t *p= (uint32_t *) (hash_table_[index].tag_vector + offset);
-        uint32_t tmp = *p;
-        */
+
         // specialized code
         assert(KEYFRAGBITS == 15);
         uint16_t *p= (uint16_t *) (hash_table_[index].tag_vector + offset);
         uint16_t tmp = *p;
-        tmp &= ~( KEYPRESENTMASK << shift);
-        *p = tmp | ( keypresent << shift);;
+        tmp &= ~(KEYPRESENTMASK << shift);
+        *p = tmp | (keypresent << shift);
         hash_table_[index].val_vector[way] = id;
     }
-
-
 
     /* read the keyfragment from the key */
     inline uint32_t keyfrag(const ConstValue& key, uint32_t keyfrag_id) const {
@@ -252,7 +233,7 @@ private:
         return way;
     }
 
-    friend class IteratorElem;
+    friend struct IteratorElem;
 };
 
 } // namespace silt

@@ -103,9 +103,6 @@ namespace silt {
     private:
         DB* dbp_;
 
-        size_t key_len_;
-        size_t data_len_;
-
         tbb::atomic<size_t> size_;
 
         friend struct IteratorElem;

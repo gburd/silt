@@ -430,8 +430,6 @@ namespace silt {
         if (offset + len > data_len)
             len = data_len - offset;
 
-        ssize_t read_len;
-
         if (data_len_ == 0) {
             size_t count = len;
             data.resize(count, false);
@@ -579,7 +577,7 @@ namespace silt {
             return false;
         }
 
-        fd_buffered_random_ = open(pathname, flags & ~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY, mode);
+        fd_buffered_random_ = open(pathname, flags & (~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY), mode);
         if (fd_buffered_random_ == -1) {
             fprintf(stderr, "FileStore::int_open(): cannot open file: %s: %s\n", pathname, strerror(errno));
             close(fd_buffered_sequential_);
@@ -593,10 +591,10 @@ namespace silt {
             fd_direct_random_ = open(pathname, flags & ~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY, mode);
             fcntl(fd_direct_random_, F_NOCACHE, 1);
 #else
-            fd_direct_random_ = open(pathname, flags & ~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY | O_DIRECT, mode);
+            fd_direct_random_ = open(pathname, flags & (~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY | O_DIRECT), mode);
 #endif
         } else {
-            fd_direct_random_ = open(pathname, flags & ~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY, mode);
+            fd_direct_random_ = open(pathname, flags & (~(O_CREAT | ~O_TRUNC | O_RDWR | O_WRONLY) | O_RDONLY), mode);
         }
         if (fd_direct_random_ == -1) {
             fprintf(stderr, "FileStore::int_open(): cannot open file: %s: %s\n", pathname, strerror(errno));
@@ -723,7 +721,7 @@ namespace silt {
         if (req_count <= page_size_ * cache_size_) {
             bool cache_available = true;
             tbb::queuing_rw_mutex::scoped_lock cache_lock(cache_mutex_, false);
-            for (off_t current_offset = req_offset; current_offset < req_offset + req_count; current_offset += page_size_) {
+            for (unsigned int current_offset = req_offset; current_offset < req_offset + req_count; current_offset += page_size_) {
                 size_t cache_index = (current_offset / page_size_) % cache_size_;
                 if (!cache_[cache_index].valid ||
                     cache_[cache_index].offset != current_offset) {
@@ -734,7 +732,7 @@ namespace silt {
             if (cache_available) {
                 use_cache = true;
                 char* p = static_cast<char*>(req_buf);
-                for (off_t current_offset = req_offset; current_offset < req_offset + req_count; current_offset += page_size_) {
+                for (unsigned int current_offset = req_offset; current_offset < req_offset + req_count; current_offset += page_size_) {
                     size_t cache_index = (current_offset / page_size_) % cache_size_;
                     memcpy(p, cache_[cache_index].data, page_size_);
                     p += page_size_;
@@ -746,7 +744,7 @@ namespace silt {
             }
         }
 
-        ssize_t read_len;
+        ssize_t read_len = 0;
         if (use_cache) {
             read_len = req_count;
         }
@@ -772,7 +770,6 @@ namespace silt {
             // do read
             //fprintf(stderr, "for %zu,%zu, requested %zu,%zu\n", offset, count, req_offset, req_count);
             read_len = pread(fd, req_buf, req_count, req_offset);
-
             if (read_len < 0) {
                 fprintf(stderr, "FileStore::int_pread(): cannot read: %s\n", strerror(errno));
                 return false;
@@ -782,7 +779,7 @@ namespace silt {
             if (req_count <= page_size_ * cache_size_) {
                 tbb::queuing_rw_mutex::scoped_lock cache_lock(cache_mutex_, true);
                 char* p = static_cast<char*>(req_buf);
-                for (off_t current_offset = req_offset; current_offset < req_offset + (read_len - (read_len & page_size_mask_)); current_offset += page_size_) {
+                for (unsigned int current_offset = req_offset; current_offset < req_offset + (read_len - (read_len & page_size_mask_)); current_offset += page_size_) {
                     size_t cache_index = (current_offset / page_size_) % cache_size_;
                     cache_[cache_index].valid = true;
                     cache_[cache_index].offset = current_offset;
@@ -792,12 +789,12 @@ namespace silt {
             }
         }
 
-        if (read_len < to_discard) {
+        if ((size_t)read_len < to_discard) {
             // no useful data read
             //fprintf(stderr, "none read\n");
             count = 0;
         }
-        else if (read_len < to_discard + count) {
+        else if ((size_t)read_len < to_discard + count) {
             // partially read
             //fprintf(stderr, "partially read, discarding first %zu and last %zu\n", to_discard, count - to_discard - (read_len - to_discard));
             memcpy(buf, static_cast<char*>(req_buf) + to_discard, read_len - to_discard);
@@ -868,7 +865,7 @@ namespace silt {
             }
         }
 
-        if (written_len < write_size) {
+        if ((size_t)written_len < write_size) {
             fprintf(stderr, "FileStore::int_pwritev(): cannot write: %s\n", strerror(errno));
             return false;
         }

@@ -11,7 +11,7 @@
 
 using namespace silt;
 
-static std::string conf_file = "testConfigs/exp_benchStores.xml";
+static std::string conf_file = "configs/exp_benchStores.xml";
 
 // TODO: moving these values into configuration file
 // assuming 4 partitions (instances)
@@ -195,7 +195,7 @@ void* constructor_thread_main(void* arg)
 
             Value key;
             Value data;
-            bool deleted;
+            //bool deleted;
 
             Silt_ConstIterator it_b = g_sorted_stores[current_store_i]->Enumerate();
             Silt_ConstIterator it_m = sorter->Enumerate();

@@ -51,9 +51,9 @@ namespace silt {
                        double step_linear = 1.0f,
                        double start_log = 1.0f,
                        double step_log = 10.0f)
-        : v_min(v_min), v_max(v_max),
-          step_linear(step_linear), start_log(start_log), step_log(step_log),
-          x_min(v_max), x_max(v_min), x_num(0), x_sum(0.0f)
+        : v_min(v_min), v_max(v_max), x_min(v_max), x_max(v_min),
+          x_sum(0.0f), x_num(0), step_linear(step_linear),
+          start_log(start_log), step_log(step_log)
     {
         assert(v_min <= v_max);
         assert(step_linear > 0);
@@ -106,12 +106,11 @@ namespace silt {
     }
 
     double DataStat::percentile(double pct) {
-        int i;
         double th = x_num * pct;
         size_t cur;
         double ret_linear  = v_min - 1;
         cur = 0;
-        for (i = 0; i < num_linear; i++) {
+        for (size_t i = 0; i < num_linear; i++) {
             cur += count_linear[i];
             if (cur >= th ) {
                 ret_linear = v_min + i * step_linear;
@@ -121,7 +120,7 @@ namespace silt {
 
         double ret_log  = v_min - 1;
         cur = 0;
-        for (i = 0; i < num_log; i++) {
+        for (size_t i = 0; i < num_log; i++) {
             cur += count_log[i];
             if (cur >= th ) {
                 if ( i == 0 )
@@ -137,12 +136,12 @@ namespace silt {
 
     double DataStat::cumulative(double x) {
         double cum_linear = 0;
-        for (int i = 0; i < index_linear(x); i++)
+        for (size_t i = 0; i < index_linear(x); i++)
             cum_linear += count_linear[i];
         cum_linear = cum_linear * 1.0 / num();
 
         double cum_log = 0;
-        for (int i = 0; i < index_log(x); i++)
+        for (size_t i = 0; i < index_log(x); i++)
             cum_log += count_log[i];
         cum_log = cum_log * 1.0 / num();
 

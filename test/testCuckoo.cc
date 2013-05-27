@@ -9,7 +9,7 @@ using namespace std;
 namespace silt
 {
 
-	static std::string conf_file = "testConfigs/testCuckoo.xml";
+	static std::string conf_file = "configs/testCuckoo.xml";
     uint64_t key_vec1[MAXNUM];
     uint64_t val_vec1[MAXNUM];
 
