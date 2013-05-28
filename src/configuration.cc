@@ -42,24 +42,10 @@
 #include "configuration.h"
 #include "debug.h"
 #include "file_io.h"
-
-#include <xercesc/util/PlatformUtils.hpp>
-
-#include <xercesc/dom/DOM.hpp>
-
-#include <xercesc/framework/StdOutFormatTarget.hpp>
-#include <xercesc/framework/LocalFileFormatTarget.hpp>
-#include <xercesc/parsers/XercesDOMParser.hpp>
-#include <xercesc/util/XMLUni.hpp>
-#include <xercesc/util/XMLString.hpp>
-
-#include <xercesc/util/OutOfMemoryException.hpp>
+#include "jsmin.h"
 
 #include <memory>
 #include <libgen.h>
-
-#include "DOMTreeErrorReporter.h"
-#include "DOMWriteErrorHandler.h"
 
 using namespace std;
 
@@ -78,11 +64,10 @@ namespace silt {
         public:
             ConfigurationObject();
             ~ConfigurationObject();
-            DOMDocument *doc_;
+            jsmntok_t tokens[1024];
             int instance_counter_;
             mutable pthread_mutex_t config_mutex_;
     };
-
 
     ConfigurationMutex::ConfigurationMutex()
     {
@@ -90,6 +75,7 @@ namespace silt {
     }
 
     std::auto_ptr<ConfigurationMutex> ConfigurationMutex::instance(NULL);
+
     ConfigurationMutex *ConfigurationMutex::getInstance()
     {
         if (instance.get() == NULL) {
@@ -116,18 +102,12 @@ namespace silt {
 
     Configuration::Configuration()
     {
-        DPRINTF(2, "Configuration: Called constructor without config file\n");
         initialize();
-        DPRINTF(2, "Configuration: Constructor: initialized!\n");
-        XMLCh *XMLCh_name = XMLString::transcode("core");
-        DOMImplementation *DOM_impl = DOMImplementationRegistry::getDOMImplementation(XMLCh_name);
-        XMLString::release(&XMLCh_name);
-        conf_obj_ = new ConfigurationObject();
-        XMLCh_name = XMLString::transcode("silt");
-        conf_obj_->doc_ = DOM_impl->createDocument(NULL, XMLCh_name, NULL);
-        XMLString::release(&XMLCh_name);
-        context_node_ = conf_obj_->doc_->getDocumentElement();
-        DPRINTF(2, "Configuration: Constructor: created object!\n");
+        const char *js = "{}";
+        jsmn_parser p;
+        jsmn_init(&p);
+        assert(JSMN_SUCCESS == jsmn_parse(&p, js, conf_obj_->tokens, 1024));
+        check(r == JSMN_SUCCESS);
     }
 
     Configuration::Configuration(const string &config_file)

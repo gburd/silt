@@ -4,8 +4,6 @@ libsilt_la_CPPFLAGS=		-I$(top_srcdir)/utils -D_FILE_OFFSET_BITS=64 \
 libsilt_la_LIBADD=		$(top_builddir)/utils/libsiltkvutils.la
 
 noinst_HEADERS= \
-	DOMTreeErrorReporter.h \
-	DOMWriteErrorHandler.h \
 	bdb.h \
 	configuration.h \
 	file_io.h \
@@ -14,6 +12,7 @@ noinst_HEADERS= \
 	hash_functions.h \
 	hash_table_cuckoo.h \
 	hash_table_default.h \
+	jsmin.h \
 	rate_limiter.h \
 	silt.h \
 	silt_combi.h \
@@ -30,8 +29,6 @@ noinst_HEADERS= \
 	value.h
 
 libsilt_la_SOURCES= \
-	DOMTreeErrorReporter.cc \
-	DOMWriteErrorHandler.cc \
 	bdb.cc \
 	cindex/bit_access.cc \
 	cindex/bit_vector.cc \
@@ -49,6 +46,7 @@ libsilt_la_SOURCES= \
 	hash_functions.cc \
 	hash_table_cuckoo.cc \
 	hash_table_default.cc \
+	jsmin.c \
 	rate_limiter.cc \
 	silt.cc \
 	silt_combi.cc \
